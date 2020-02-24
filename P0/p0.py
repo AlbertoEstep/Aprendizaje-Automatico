@@ -5,6 +5,7 @@
 # Date: 18/02/2020
 
 from sklearn import datasets
+from sklearn.model_selection import StratifiedShuffleSplit
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -26,20 +27,20 @@ y = iris.target
 
 # Diccionario de colores {key = número de la clase, value = color de la clase}
 colores = {0: 'red', 1: 'green', 2: 'blue'}
+nombres = {0: 'Setosa', 1: 'Versicolor', 2: 'Virginia'}
 clases = np.unique(y)
 
 # Recorrer las clases y las pintamos con un color diferente
 for clase in clases:
     index = np.where(y == clase)
-    plt.scatter(x[index, 0], x[index, 1], c=colores[clase], label='Clase {}'.format(clase))
+    plt.scatter(x[index, 0], x[index, 1], c=colores[clase], label=nombres[clase])
 
-# Incluimos los nombres en los ejes, el título del grafico y la leyenda, y la pintamos
+# Incluimos los nombres en los ejes, el título del gráfico y la leyenda, y la pintamos
 plt.xlabel('Petal length')
 plt.ylabel('Petal width')
 plt.title('Iris dataset classification')
 plt.legend()
 plt.show()
-
 
 
 # ------------------------------------------------------------------------------
@@ -51,69 +52,39 @@ plt.show()
 # esto se pretende evitar que haya clases infra-representadas en entrenamiento o
 # test. Nota: el comando zip puede ser de utilidad en este apartado.
 
+sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2)
+for train_index, test_index in sss.split(x, y):
+    training_x, test_x = x[train_index], x[test_index]
+    training_y, test_y = y[train_index], y[test_index]
+print(training_x)
+print(training_y)
+print(test_x)
+print(test_y)
 
-#COPIADO
-# Dividir la muestra proporcionalmente según el ratio
-def stratify_sample(in_vec, labels, ratio=0.8):
-    sample = np.c_[in_vec, labels]               # Juntar por columnas vec. características y etiquetas en una matriz
-    group_set = np.unique(y)                     # Grupos únicos que existen
-    np.random.shuffle(sample)                    # Mezclar la muestra para distribuirla aleatoriamente
 
-    # Listas donde se guardarán las selecciones
-    train_list = []
-    test_list = []
+# ------------------------------------------------------------------------------
+# ---------------------------- PARTE 3 -----------------------------------------
+# ------------------------------------------------------------------------------
 
-    # De la muestra mezclada, escoger los n primeros elementos de cada grupo
-    # y juntarlos en la lista de entrenamiento, el resto en la de test
-    # Cada grupo de elementos  escogidos es una lista, por tanto
-    # se tienen que combinar luego
-    # n = num_elementos_grupo * ratio
-    for group in group_set:
-        elem_group = sample[sample[:, -1] == group]
-        n_elem = elem_group.shape[0]
-        n_selected_elem = int(n_elem * ratio)
+# Obtener 100 valores equiespaciados entre 0 y 2π.
+z = np.linspace(0, 2*np.pi, 100)
+print(z)
 
-        train_list.append(elem_group[:n_selected_elem, :])
-        test_list.append(elem_group[n_selected_elem:, :])
+# Obtener el valor de sin(x), cos(x) y sin(x) + cos(x) para los 100 valores
+# anteriormente calculados.
+sin_z = np.sin(z)
+print(sin_z)
+cos_z = np.cos(z)
+print(cos_z)
+suma = sin_z + cos_z
+print(suma)
 
-    # Juntar las sub-listas en una única matriz
-    training = np.concatenate(train_list)
-    test = np.concatenate(test_list)
+# Visualizar las tres curvas simultáneamente en el mismo plot (con líneas
+# discontinuas en negro, azul y rojo).
 
-    # Volver a mezclar las muestras para distribuirlas aleatoriamente
-    np.random.shuffle(training)
-    np.random.shuffle(test)
+plt.plot(z, sin_z, color="black", dashes=[6, 2], label="seno")
+plt.plot(z, cos_z, color="blue", dashes=[6, 2], label="coseno")
+plt.plot(z, suma, color="red", dashes=[6, 2], label="seno + coseno")
 
-    return training, test
-
-training, test = stratify_sample(x_last_cols, y)
-
-# Separar las muestras en x e y
-training_x = training[:, :-1]
-training_y = training[:, -1]
-test_x = test[:, :-1]
-test_y = test[:, -1]
-
-# Mostrar información sobre la muestra de entrenamiento
-# Mostrar número de elementos de cada grupo, el tamaño y la muestra de dos formas:
-# - x,y juntos
-# - x,y por separado
-print('Number of Group 0 elements in training sample: {}'.format(np.count_nonzero(training[:, -1] == 0)))
-print('Number of Group 1 elements in training sample: {}'.format(np.count_nonzero(training[:, -1] == 1)))
-print('Number of Group 2 elements in training sample: {}'.format(np.count_nonzero(training[:, -1] == 2)))
-print('Size of training sample: {}'.format(training.shape))
-print('Training sample:\n{}'.format(training))
-print('Training sample x:\n{}'.format(training_x))
-print('Training sample y:\n{}'.format(training_y))
-
-# Mostrar información sobre la muestra de pruebas
-# Mostrar número de elementos de cada grupo, el tamaño y la muestra de dos formas:
-# - x,y juntos
-# - x,y por separado
-print('Number of Group 0 elements in test sample: {}'.format(np.count_nonzero(test[:, -1] == 0)))
-print('Number of Group 1 elements in test sample: {}'.format(np.count_nonzero(test[:, -1] == 1)))
-print('Number of Group 2 elements in test sample: {}'.format(np.count_nonzero(test[:, -1] == 2)))
-print('Size of test sample: {}'.format(test.shape))
-print('Test sample:\n{}'.format(test))
-print('Test sample x:\n{}'.format(test_x))
-print('Test sample y:\n{}'.format(test_y))
+plt.legend(loc='lower left')
+plt.show()
