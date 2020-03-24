@@ -9,6 +9,8 @@
 #############################
 
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 #------------------------------------------------------------------------------#
 #---------------------- Ejercicio sobre regresión lineal ----------------------#
@@ -39,72 +41,112 @@ def readData(file_x, file_y):
 
 	return x, y
 
-# Funcion para calcular el error
+# Calculamos el error mediante la expresión matricial disponible en la diapositiva
+# 8 del tema 2: E(w) = (1/N)||Xw-y||^2
 def Err(x, y, w):
-	##COPIADO
-	error = np.square(x.dot(w) - y.reshape(-1, 1))        # Calcular el error cuadrático para cada vector de características
-    error = error.mean()                                  # Calcular la media de los errors cuadráticos (matriz con una columna)
-    return error
+	# Calculamos el error cuadrático para cada vector de características
+	err = np.square(x.dot(w) - y.reshape(-1, 1))
+	# Calculamos la media de los errores cuadráticos y la devolvemos
+	return err.mean()
 
-def diff_Err(x,y,w):
-    d_error = x.dot(w) - y.reshape(-1, 1)           # Calcular producto vectorial de x*w y restarle y
-    d_error =  2 * np.mean(x * d_error, axis=0)     # Realizar la media del producto escalar de x*error y la media en el eje 0
-    d_error = d_error.reshape(-1, 1)                # Cambiar la forma para que tenga 3 filas y 1 columna
-    return d_error
+# Calculamos la derivada del error mediante la expresión matricial disponible en
+# la diapositiva 10 del tema 2: dE(w) = (2/N)X^t(Xw-y)
+def dErr(x,y,w):
+	# Aplicamos la formula paso a paso
+    de = x.dot(w) - y.reshape(-1, 1)
+    de =  2 * np.mean(x * de, axis=0)
+    return de.reshape(-1, 1)
 
-# Gradiente Descendente Estocastico
-def sgd(x, y, lr, max_iters, tam_minibatch):
-    w = np.zeros((3, 1), np.float64)
-    n = x.shape[0]
-    i = 0
-
-	while i < max_iters:
-        i += 1
-        # Escoger valores aleatorios de índices sin repeticiones y obtener los elementos
-        index = np.random.choice(n, tam_minibatch, replace=False)
-        minibatch_x = x[index]
-        minibatch_y = y[index]
-        # Actualizar w
-        w = w - lr * diff_Err(minibatch_x, minibatch_y, w)
-	# HASTA AQUI COPIADO
+# Calculamos el Gradiente Descendente Estocastico
+def sgd(x, y, lr = 0.01, max_iters = 1000, tam_minibatch = 32):
+	# Rellenamos la solucion con ceros
+	w = np.zeros((3, 1), np.float64)
+	for i in range(max_iters):
+		# Cogemos índices de forma aleatoria sin repeticiones.
+		indice = np.random.choice(x.shape[0], tam_minibatch, replace=False)
+		# Calculamos los elementos correspondientes a dichos índices.
+		minibatch_x = x[indice]
+		minibatch_y = y[indice]
+		# Actualizar w
+		w = w - lr * dErr(minibatch_x, minibatch_y, w)
 	return w
 
-# Algoritmo pseudoinversa
+# Calculamos la pseudoinversa mediante el algoritmo disponible en la diapositiva
+# 12 del tema 2
 def pseudoinverse(x, y):
+	# Aplicamos el algoritmo paso a paso
+    x_traspuesta = x.transpose()
+    y_traspuesta = y.reshape(-1, 1)
+    w = np.linalg.inv(x_traspuesta.dot(x))
+    w = w.dot(x_traspuesta)
+    w = w.dot(y_traspuesta)
+    return w
 
-	return w
 
+# DATOS:
 # Lectura de los datos de entrenamiento
-x, y = readData()
+x, y = readData('datos/X_train.npy', 'datos/y_train.npy')
 # Lectura de los datos para el test
-x_test, y_test = readData()
+x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy')
+# Etiquetas
+etiqueta1 = -1
+etiqueta5 = 1
+etiquetas = (etiqueta1, etiqueta5)
+color = {etiqueta1: 'b', etiqueta5: 'g'}
+valores = {etiqueta1: 1, etiqueta5: 5}
 
+# Ejercicio 1
 print ('EJERCICIO SOBRE REGRESION LINEAL\n')
 print ('Ejercicio 1\n')
-# Gradiente descendente estocastico
 
-w = sgd()
+# Gradiente descendente estocastico
+w = sgd(x, y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+for etiqueta in etiquetas:
+    indice = np.where(y == etiqueta)
+    plt.scatter(x[indice, 1], x[indice, 2], c=color[etiqueta], label='{}'.format(valores[etiqueta]))
+# Para pintar la recta de separación de los datos despejamos de la ecuación:
+# 0 = w0 + w1 * x1 + w2 * x2, x2 a partir de x1
+plt.plot([0, 1], [-w[0]/w[2], -(w[0] + w[1])/w[2]], 'r-')
+plt.title('Regresión lineal con SGD')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 1A')
+plt.xlabel('Intensidad promedio')
+plt.ylabel('Simetría')
+plt.legend()
+plt.show()
 
 print ('Bondad del resultado para grad. descendente estocastico:\n')
-print ("Ein: ", Err())
-print ("Eout: ", Err())
+print ("Ein: ", Err(x,y,w))
+print ("Eout: ", Err(x_test, y_test, w))
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
 # Algoritmo Pseudoinversa
-
 w = pseudoinverse(x, y)
+# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+for etiqueta in etiquetas:
+    indice = np.where(y == etiqueta)
+    plt.scatter(x[indice, 1], x[indice, 2], c=color[etiqueta], label='{}'.format(valores[etiqueta]))
+# Para pintar la recta de separación de los datos despejamos de la ecuación:
+# 0 = w0 + w1 * x1 + w2 * x2, x2 a partir de x1
+plt.plot([0, 1], [-w[0]/w[2], -(w[0] + w[1])/w[2]], 'r-')
+plt.title('Regresión lineal con el algoritmo de la pseudoinversa')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 1B')
+plt.xlabel('Intensidad promedio')
+plt.ylabel('Simetría')
+plt.legend()
+plt.show()
 
 print ('\nBondad del resultado para el algoritmo de la pseudoinversa:\n')
-print ("Ein: ", Err())
-print ("Eout: ", Err())
+print ("Ein: ", Err(x,y,w))
+print ("Eout: ", Err(x_test, y_test, w))
 
 
 #------------------------------Ejercicio 2 -------------------------------------#
 
 # Simula datos en un cuadrado [-size,size]x[-size,size]
 def simula_unif(N, d, size):
-	return
+	return np.random.uniform(-size, size, (N,d))
 
 # EXPERIMENTO
 # a) Muestra de entrenamiento N = 1000, cuadrado [-1,1]x[-1,1]
@@ -112,7 +154,19 @@ def simula_unif(N, d, size):
 print ('Ejercicio 2\n')
 print ('Muestra N = 1000, cuadrado [-1,1]x[-1,1]')
 
+# Datos
+N = 1000
+d = 2
+size = 1
 
+# Pintamos el grádico de dispersion con los datos obtenidos
+train_x = simula_unif(N, d, size)
+plt.scatter(train_x[:, 0], train_x[:, 1], c='g')
+plt.title('Muestra de entrenamiento N = 1000, cuadrado [-1,1]x[-1,1]')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2A')
+plt.xlabel('Eje $x_1$')
+plt.ylabel('Eje $x_2$')
+plt.show()
 
 
 # -------------------------------------------------------------------
