@@ -141,6 +141,7 @@ print ('\nBondad del resultado para el algoritmo de la pseudoinversa:\n')
 print ("Ein: ", Err(x,y,w))
 print ("Eout: ", Err(x_test, y_test, w))
 
+input("\n--- Pulsar tecla para continuar ---\n")
 
 #------------------------------Ejercicio 2 -------------------------------------#
 
@@ -159,7 +160,7 @@ N = 1000
 d = 2
 size = 1
 
-# Pintamos el grádico de dispersion con los datos obtenidos
+# Pintamos el gráfico de dispersion con los datos obtenidos
 train_x = simula_unif(N, d, size)
 plt.scatter(train_x[:, 0], train_x[:, 1], c='g')
 plt.title('Muestra de entrenamiento N = 1000, cuadrado [-1,1]x[-1,1]')
@@ -168,6 +169,81 @@ plt.xlabel('Eje $x_1$')
 plt.ylabel('Eje $x_2$')
 plt.show()
 
+input("\n--- Pulsar tecla para continuar ---\n")
+
+# -------------------------------------------------------------------
+
+# b) asignamos las etiquetas a cada punto con la función dada e introducimos ruido
+
+print ('Muestra N = 1000, cuadrado [-1,1]x[-1,1] con ruido y definidas las etiquetas')
+
+
+# Calculamos f(x_1 , x_2) = sign((x_1 - 0,2)^2 + x_2^2 - 0,6)
+def asigna_etiquetas(x):
+    return np.sign(np.square(x[:, 0] - 0.2) + np.square(x[:, 1]) - 0.6)
+
+# Introducimos ruido en las etiquetas de la muestra
+def introduce_ruido(train_y, porcentaje = 0.1):
+    # Primero calculamos el número de etiquetas que tenemos que cambiarle el
+	# signo (ruido) y luego obtenemos una muestra de forma aleatoria de dicho
+	# tamaño y le cambiamos el signo.
+    n = train_y.shape[0]
+    n_ruido = int(n * porcentaje)
+    i = np.random.choice(np.arange(n), n_ruido, replace=False)
+    train_y[i] = - train_y[i]
+
+# Asignamos las etiquetas a la muestra
+train_y = asigna_etiquetas(train_x)
+# Introducimos el ruido en las etiquetas
+introduce_ruido(train_y, 0.1)
+# Definimos el color y las etiquetas que usaremos para pintar los datos
+color = {1: 'b', -1: 'g'}
+etiquetas = np.unique(train_y)
+# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+for etiqueta in etiquetas:
+    indice = np.where(train_y == etiqueta)
+    plt.scatter(train_x[indice, 0], train_x[indice, 1], c=color[etiqueta], label='Etiqueta {}'.format(etiqueta))
+
+plt.title('Muestra de entrenamiento N = 1000, cuadrado [-1,1]x[-1,1], con ruido')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2B')
+plt.xlabel('Eje $x_1$')
+plt.ylabel('Eje $x_2$')
+plt.legend()
+plt.show()
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+# -------------------------------------------------------------------
+
+# c ) Ajustamos un modelo de regresion lineal al conjunto de datos generado
+
+print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado')
+
+# Crear vector columna de 1's
+ones = np.ones((1000, 1), dtype=np.float64)
+# Obtener x juntando el vector de 1's con train_x
+train_x = np.c_[ones, train_x]
+# Gradiente descendente estocastico
+w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+for etiqueta in etiquetas:
+	indice = np.where(train_y == etiqueta)
+	plt.scatter(train_x[indice, 1], train_x[indice, 2], c=color[etiqueta], label='{}'.format(etiqueta))
+# Para pintar la recta de separación de los datos despejamos de la ecuación:
+# 0 = w0 + w1 * (x1 = -1) + w2 * x2, x2 a partir de x1 y de 0 = w0 + w1 * (x1 = 1) + w2 * x2
+plt.plot([-1, 1], [(-w[0] + w[1])/w[2], -(w[0] + w[1])/w[2]], 'r-')
+plt.title('Regresión lineal con SGD')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2C')
+plt.xlabel('Eje $x_1$')
+plt.ylabel('Eje $x_2$')
+plt.ylim(-1.1, 1.1)
+plt.legend()
+plt.show()
+
+print ('Bondad del resultado para grad. descendente estocastico:\n')
+print ("Ein: ", Err(train_x ,train_y, w))
+
+input("\n--- Pulsar tecla para continuar ---\n")
 
 # -------------------------------------------------------------------
 
