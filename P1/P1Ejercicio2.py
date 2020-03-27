@@ -10,6 +10,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from progress.bar import Bar
 
 
 #------------------------------------------------------------------------------#
@@ -51,7 +52,7 @@ def Err(x, y, w):
 
 # Calculamos la derivada del error mediante la expresión matricial disponible en
 # la diapositiva 10 del tema 2: dE(w) = (2/N)X^t(Xw-y)
-def dErr(x,y,w):
+def dErr(x, y, w):
 	# Aplicamos la formula paso a paso
     de = x.dot(w) - y.reshape(-1, 1)
     de =  2 * np.mean(x * de, axis=0)
@@ -60,15 +61,25 @@ def dErr(x,y,w):
 # Calculamos el Gradiente Descendente Estocastico
 def sgd(x, y, lr = 0.01, max_iters = 1000, tam_minibatch = 32):
 	# Rellenamos la solucion con ceros
-	w = np.zeros((3, 1), np.float64)
-	for i in range(max_iters):
-		# Cogemos índices de forma aleatoria sin repeticiones.
-		indice = np.random.choice(x.shape[0], tam_minibatch, replace=False)
-		# Calculamos los elementos correspondientes a dichos índices.
-		minibatch_x = x[indice]
-		minibatch_y = y[indice]
-		# Actualizar w
-		w = w - lr * dErr(minibatch_x, minibatch_y, w)
+	w = np.zeros((x.shape[1], 1), np.float64)
+	i = 0
+	j = 0
+	# Escojemos los 1000 primeros números permutados
+	indices = np.random.permutation(np.arange(x.shape[0]))
+	# Mientras queden iteraciones
+	while i < max_iters:
+		# Si nos salimos del límite, comenzamos en cero
+		if j > x.shape[0]:
+			j = 0
+			# Reordenamos otra vez los indices
+			indices = np.random.permutation(indices)
+		# Escogemos el conjunto de minibatch
+		minibatch = indices[j:j+tam_minibatch]
+		# Calculamos w
+		w = w - lr * dErr(x[minibatch, :], y[minibatch], w)
+		# Actualizamos índices
+		j += tam_minibatch
+		i += 1
 	return w
 
 # Calculamos la pseudoinversa mediante el algoritmo disponible en la diapositiva
@@ -96,8 +107,8 @@ color = {etiqueta1: 'b', etiqueta5: 'g'}
 valores = {etiqueta1: 1, etiqueta5: 5}
 
 # Ejercicio 1
-print ('EJERCICIO SOBRE REGRESION LINEAL\n')
-print ('Ejercicio 1\n')
+print ('--------------EJERCICIO SOBRE REGRESION LINEAL----------------------\n')
+print ('-------------------- Ejercicio 1 -----------------------------------\n')
 
 # Gradiente descendente estocastico
 w = sgd(x, y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
@@ -141,7 +152,7 @@ print ('\nBondad del resultado para el algoritmo de la pseudoinversa:\n')
 print ("Ein: ", Err(x,y,w))
 print ("Eout: ", Err(x_test, y_test, w))
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para continuar ---\n\n")
 
 #------------------------------Ejercicio 2 -------------------------------------#
 
@@ -152,7 +163,7 @@ def simula_unif(N, d, size):
 # EXPERIMENTO
 # a) Muestra de entrenamiento N = 1000, cuadrado [-1,1]x[-1,1]
 
-print ('Ejercicio 2\n')
+print ('-------------------- Ejercicio 2 -----------------------------------\n')
 print ('Muestra N = 1000, cuadrado [-1,1]x[-1,1]')
 
 # Datos
@@ -169,7 +180,7 @@ plt.xlabel('Eje $x_1$')
 plt.ylabel('Eje $x_2$')
 plt.show()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para continuar ---\n\n")
 
 # -------------------------------------------------------------------
 
@@ -211,13 +222,13 @@ plt.ylabel('Eje $x_2$')
 plt.legend()
 plt.show()
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para continuar ---\n\n")
 
 # -------------------------------------------------------------------
 
 # c ) Ajustamos un modelo de regresion lineal al conjunto de datos generado
 
-print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado')
+print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado\n')
 
 # Columna de unos
 columna_unos = np.ones((1000, 1), dtype=np.float64)
@@ -244,29 +255,34 @@ plt.show()
 print ('Bondad del resultado para grad. descendente estocastico:\n')
 print ("Ein: ", Err(train_x ,train_y, w))
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para continuar ---\n\n")
 
 # -------------------------------------------------------------------
 
 # d) Ejecutar el experimento 1000 veces
-'''
+
+print("Ejecutamos el experimento 1000 veces:\n")
 lista_error_in = []
 lista_error_out = []
 
+bar = Bar('Pasos completados del experimento:', max=1000)
 for _ in range(1000):
-    # Generamos los datos de entrenamiento con ruido y los de test sin ruido
-    train_x = simula_unif(N, d, size)
-    train_y = asigna_etiquetas(train_x)
-    train_x = np.c_[columna_unos, train_x]
-    introduce_ruido(train_y, 0.1)
-    test_x = simula_unif(N, d, size)
-    test_y = asigna_etiquetas(test_x)
-    test_x = np.c_[columna_unos, test_x]
+	# Generamos los datos de entrenamiento y los de test con ruido
+	train_x = simula_unif(N, d, size)
+	train_y = asigna_etiquetas(train_x)
+	train_x = np.c_[columna_unos, train_x]
+	introduce_ruido(train_y, 0.1)
+	test_x = simula_unif(N, d, size)
+	test_y = asigna_etiquetas(test_x)
+	test_x = np.c_[columna_unos, test_x]
+	introduce_ruido(test_y, 0.1)
 	# Aplicamos el SGD
-    w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
-    # Calculamos E_in y E_out
-    lista_error_in.append(Err(train_x, train_y, w))
-    lista_error_out.append(Err(test_x, test_y, w))
+	w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+	# Calculamos E_in y E_out
+	lista_error_in.append(Err(train_x, train_y, w))
+	lista_error_out.append(Err(test_x, test_y, w))
+	bar.next()
+bar.finish()
 
 # Calculamos la media de los vectores E_in y E_out
 Ein = np.array(lista_error_in)
@@ -274,21 +290,20 @@ Eout = np.array(lista_error_out)
 Ein_media = Ein.mean()
 Eout_media = Eout.mean()
 
-print ('Errores Ein y Eout medios tras 1000reps del experimento:\n')
+print ('\nErrores Ein y Eout medios tras 1000reps del experimento:\n')
 print ("Ein media: ", Ein_media)
 print ("Eout media: ", Eout_media)
 
-input("\n--- Pulsar tecla para continuar ---\n")
-'''
+input("\n--- Pulsar tecla para continuar ---\n\n")
+
 # -------------------------------------------------------------------
 
 # NO LINEAL
 
-print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado')
+print('Ajustamos un modelo de regresion con el vector de caracteristicas correspondiente al conjunto de datos generado')
+print('\n-------------- 1 ejecución ----------------------------------------\n')
 
-train_x = simula_unif(N, d, size)
-train_y = asigna_etiquetas(train_x)
-
+# Creamos train_x con la forma del vector de caracteristicas que nos piden
 def creamos_matriz(train_x, N, d, size):
     columna_unos = np.ones((N, 1), dtype=np.float64)
     columnas_normal = train_x
@@ -298,29 +313,74 @@ def creamos_matriz(train_x, N, d, size):
     caracteristicas = np.c_[columna_unos, columnas_normal, columna_producto.reshape(-1,1), columna_primera_c_cuadrado.reshape(-1,1), columna_segunda_c_cuadrado.reshape(-1,1)]
     return caracteristicas
 
+train_x = simula_unif(N, d, size)
+train_y = asigna_etiquetas(train_x)
 train_x = creamos_matriz(train_x, N = 1000, d = 2, size = 1)
+# Introducimos ruido
 introduce_ruido(train_y, 0.1)
-
-
-'''
-# Gradiente descendente estocastico
+# Aplicamos el algoritmo de SGD
 w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
-# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+
+# Obtenemos los resultados del error
+print ('Bondad del resultado para grad. descendente estocastico:\n')
+print ("Ein: ", Err(train_x ,train_y, w))
+
+# Pintamos el gráfico de puntos junto con la línea de separación
 for etiqueta in etiquetas:
 	indice = np.where(train_y == etiqueta)
 	plt.scatter(train_x[indice, 1], train_x[indice, 2], c=color[etiqueta], label='{}'.format(etiqueta))
-# Para pintar la recta de separación de los datos despejamos de la ecuación:
-# 0 = w0 + w1 * (x1 = -1) + w2 * x2, x2 a partir de x1 y de 0 = w0 + w1 * (x1 = 1) + w2 * x2
-plt.plot([-1, 1], [(-w[0] + w[1])/w[2], -(w[0] + w[1])/w[2]], 'r-')
-plt.title('Regresión lineal con SGD')
-plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2C')
+delta = 0.025
+xrange = np.arange(-1.0, 1.0, delta)
+yrange = np.arange(-1.0, 1.0, delta)
+X, Y = np.meshgrid(xrange,yrange)
+F = w[0]+w[1]*X+w[2]*Y+w[3]*X*Y+w[4]*(X**2)+w[5]*(Y**2)
+plt.contour(X, Y, F, [0])
+plt.title('Regresión con características no lineales SGD')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2F')
 plt.xlabel('Eje $x_1$')
 plt.ylabel('Eje $x_2$')
 plt.ylim(-1.1, 1.1)
 plt.legend()
 plt.show()
 
-print ('Bondad del resultado para grad. descendente estocastico:\n')
-print ("Ein: ", Err(train_x ,train_y, w))
-'''
+
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+
+# B) Ejecutar el experimento 1000 veces
+print('\n-------------- 1000 ejecuciones -----------------------------------\n')
+
+lista_error_in_6 = []
+lista_error_out_6 = []
+
+bar = Bar('Pasos completados del experimento:', max=1000)
+for _ in range(1000):
+	# Generamos los datos de entrenamiento y los de test con ruido
+	train_x = simula_unif(N, d, size)
+	train_y = asigna_etiquetas(train_x)
+	train_x = creamos_matriz(train_x, N = 1000, d = 2, size = 1)
+	introduce_ruido(train_y, 0.1)
+	test_x = simula_unif(N, d, size)
+	test_y = asigna_etiquetas(test_x)
+	test_x = creamos_matriz(test_x, N = 1000, d = 2, size = 1)
+	introduce_ruido(test_y, 0.1)
+	# Aplicamos el SGD
+	w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+	# Calculamos E_in y E_out
+	lista_error_in_6.append(Err(train_x, train_y, w))
+	lista_error_out_6.append(Err(test_x, test_y, w))
+	bar.next()
+bar.finish()
+
+# Calculamos la media de los vectores E_in y E_out
+Ein = np.array(lista_error_in_6)
+Eout = np.array(lista_error_out_6)
+Ein_media = Ein.mean()
+Eout_media = Eout.mean()
+
+print ('Errores Ein y Eout medios tras 1000reps del experimento:\n')
+print ("Ein media: ", Ein_media)
+print ("Eout media: ", Eout_media)
+
 input("\n--- Pulsar tecla para continuar ---\n")
