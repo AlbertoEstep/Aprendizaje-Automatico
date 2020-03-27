@@ -384,3 +384,76 @@ print ("Ein media: ", Ein_media)
 print ("Eout media: ", Eout_media)
 
 input("\n--- Pulsar tecla para continuar ---\n")
+
+
+# PRUEBA SIN RUIDO
+
+print("\n\n---------------- Hagamos una prueba sin ruido --------------------\n")
+
+train_x = simula_unif(N, d, size)
+train_y = asigna_etiquetas(train_x)
+train_x = creamos_matriz(train_x, N = 1000, d = 2, size = 1)
+# Aplicamos el algoritmo de SGD
+w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+
+# Obtenemos los resultados del error
+print ('Bondad del resultado para grad. descendente estocastico:\n')
+print ("Ein: ", Err(train_x ,train_y, w))
+
+# Pintamos el gráfico de puntos junto con la línea de separación
+for etiqueta in etiquetas:
+	indice = np.where(train_y == etiqueta)
+	plt.scatter(train_x[indice, 1], train_x[indice, 2], c=color[etiqueta], label='{}'.format(etiqueta))
+delta = 0.025
+xrange = np.arange(-1.0, 1.0, delta)
+yrange = np.arange(-1.0, 1.0, delta)
+X, Y = np.meshgrid(xrange,yrange)
+F = w[0]+w[1]*X+w[2]*Y+w[3]*X*Y+w[4]*(X**2)+w[5]*(Y**2)
+plt.contour(X, Y, F, [0])
+plt.title('Regresión con características no lineales SGD')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2F')
+plt.xlabel('Eje $x_1$')
+plt.ylabel('Eje $x_2$')
+plt.ylim(-1.1, 1.1)
+plt.legend()
+plt.show()
+
+
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+
+# B) Ejecutar el experimento 1000 veces
+print('\n-------------- 1000 ejecuciones -----------------------------------\n')
+
+lista_error_in_6 = []
+lista_error_out_6 = []
+
+bar = Bar('Pasos completados del experimento:', max=1000)
+for _ in range(1000):
+	# Generamos los datos de entrenamiento y los de test sin ruido
+	train_x = simula_unif(N, d, size)
+	train_y = asigna_etiquetas(train_x)
+	train_x = creamos_matriz(train_x, N = 1000, d = 2, size = 1)
+	test_x = simula_unif(N, d, size)
+	test_y = asigna_etiquetas(test_x)
+	test_x = creamos_matriz(test_x, N = 1000, d = 2, size = 1)
+	# Aplicamos el SGD
+	w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+	# Calculamos E_in y E_out
+	lista_error_in_6.append(Err(train_x, train_y, w))
+	lista_error_out_6.append(Err(test_x, test_y, w))
+	bar.next()
+bar.finish()
+
+# Calculamos la media de los vectores E_in y E_out
+Ein = np.array(lista_error_in_6)
+Eout = np.array(lista_error_out_6)
+Ein_media = Ein.mean()
+Eout_media = Eout.mean()
+
+print ('Errores Ein y Eout medios tras 1000reps del experimento:\n')
+print ("Ein media: ", Ein_media)
+print ("Eout media: ", Eout_media)
+
+input("\n--- Pulsar tecla para continuar ---\n")

@@ -98,10 +98,8 @@ def gd_grafica(w, lr, grad_fun, fun, max_iters = 50):
 
 print ('Resultados ejercicio 2\n')
 print ('\nGrafica con learning rate igual a 0.01')
-# w, num_ite = gd(w = [1,-1], lr = 0.01, grad_fun = gradf, fun = f, epsilon = 10**(-14), max_iters = 50)
 gd_grafica(w = [1,-1], lr = 0.01, grad_fun = gradf, fun = f, max_iters = 50)
 print ('\nGrafica con learning rate igual a 0.1')
-# w, num_ite = gd(w = [1,-1], lr = 0.1, grad_fun = gradf, fun = f, epsilon = 10**(-14), max_iters = 50)
 gd_grafica(w = [1,-1], lr = 0.1, grad_fun = gradf, fun = f, max_iters = 50)
 input("\n--- Pulsar tecla para continuar ---\n")
 
