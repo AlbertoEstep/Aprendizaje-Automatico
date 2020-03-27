@@ -219,10 +219,11 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado')
 
-# Crear vector columna de 1's
-ones = np.ones((1000, 1), dtype=np.float64)
-# Obtener x juntando el vector de 1's con train_x
-train_x = np.c_[ones, train_x]
+# Columna de unos
+columna_unos = np.ones((1000, 1), dtype=np.float64)
+# Concatenamos la columna de 1 con los valores de entrenamiento para así obtener
+# el vector de características (1, x1, x2)
+train_x = np.c_[columna_unos, train_x]
 # Gradiente descendente estocastico
 w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
 # Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
@@ -248,9 +249,78 @@ input("\n--- Pulsar tecla para continuar ---\n")
 # -------------------------------------------------------------------
 
 # d) Ejecutar el experimento 1000 veces
+'''
+lista_error_in = []
+lista_error_out = []
+
+for _ in range(1000):
+    # Generamos los datos de entrenamiento con ruido y los de test sin ruido
+    train_x = simula_unif(N, d, size)
+    train_y = asigna_etiquetas(train_x)
+    train_x = np.c_[columna_unos, train_x]
+    introduce_ruido(train_y, 0.1)
+    test_x = simula_unif(N, d, size)
+    test_y = asigna_etiquetas(test_x)
+    test_x = np.c_[columna_unos, test_x]
+	# Aplicamos el SGD
+    w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+    # Calculamos E_in y E_out
+    lista_error_in.append(Err(train_x, train_y, w))
+    lista_error_out.append(Err(test_x, test_y, w))
+
+# Calculamos la media de los vectores E_in y E_out
+Ein = np.array(lista_error_in)
+Eout = np.array(lista_error_out)
+Ein_media = Ein.mean()
+Eout_media = Eout.mean()
 
 print ('Errores Ein y Eout medios tras 1000reps del experimento:\n')
 print ("Ein media: ", Ein_media)
 print ("Eout media: ", Eout_media)
 
+input("\n--- Pulsar tecla para continuar ---\n")
+'''
+# -------------------------------------------------------------------
+
+# NO LINEAL
+
+print ('Ajustamos un modelo de regresion lineal al conjunto de datos generado')
+
+train_x = simula_unif(N, d, size)
+train_y = asigna_etiquetas(train_x)
+
+def creamos_matriz(train_x, N, d, size):
+    columna_unos = np.ones((N, 1), dtype=np.float64)
+    columnas_normal = train_x
+    columna_producto = columnas_normal[:,0] * columnas_normal[:,1]
+    columna_primera_c_cuadrado = columnas_normal[:,0] * columnas_normal[:,0]
+    columna_segunda_c_cuadrado = columnas_normal[:,1] * columnas_normal[:,1]
+    caracteristicas = np.c_[columna_unos, columnas_normal, columna_producto.reshape(-1,1), columna_primera_c_cuadrado.reshape(-1,1), columna_segunda_c_cuadrado.reshape(-1,1)]
+    return caracteristicas
+
+train_x = creamos_matriz(train_x, N = 1000, d = 2, size = 1)
+introduce_ruido(train_y, 0.1)
+
+
+'''
+# Gradiente descendente estocastico
+w = sgd(train_x, train_y, lr = 0.01, max_iters = 1000, tam_minibatch = 32)
+# Pintamos las soluciones obtenidas junto con los datos usados en el ajuste
+for etiqueta in etiquetas:
+	indice = np.where(train_y == etiqueta)
+	plt.scatter(train_x[indice, 1], train_x[indice, 2], c=color[etiqueta], label='{}'.format(etiqueta))
+# Para pintar la recta de separación de los datos despejamos de la ecuación:
+# 0 = w0 + w1 * (x1 = -1) + w2 * x2, x2 a partir de x1 y de 0 = w0 + w1 * (x1 = 1) + w2 * x2
+plt.plot([-1, 1], [(-w[0] + w[1])/w[2], -(w[0] + w[1])/w[2]], 'r-')
+plt.title('Regresión lineal con SGD')
+plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2C')
+plt.xlabel('Eje $x_1$')
+plt.ylabel('Eje $x_2$')
+plt.ylim(-1.1, 1.1)
+plt.legend()
+plt.show()
+
+print ('Bondad del resultado para grad. descendente estocastico:\n')
+print ("Ein: ", Err(train_x ,train_y, w))
+'''
 input("\n--- Pulsar tecla para continuar ---\n")
