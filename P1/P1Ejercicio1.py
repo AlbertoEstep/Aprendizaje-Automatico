@@ -205,4 +205,4 @@ print ('Valor minimo: ', minimo, '\n')
 print ('Coordenadas valor devuelto por el algoritmo: (x,y) = (', w[0], ', ', w[1],')')
 print ('Valor minimo devuelto por el algoritmo: ', f(w), '\n')
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para finalizar ---\n")

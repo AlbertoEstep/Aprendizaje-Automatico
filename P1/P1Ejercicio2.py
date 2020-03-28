@@ -456,4 +456,4 @@ print ('Errores Ein y Eout medios tras 1000reps del experimento:\n')
 print ("Ein media: ", Ein_media)
 print ("Eout media: ", Eout_media)
 
-input("\n--- Pulsar tecla para continuar ---\n")
+input("\n--- Pulsar tecla para finalizar ---\n")

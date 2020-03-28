@@ -40,7 +40,7 @@ def hessiana_f(w):
     return np.array([[fxx(w), fxy(w)], [fxy(w), fyy(w)]])
 
 # Algoritmo Gradiente Descendente
-def sgd(w_0, max_iteraciones = 100, lr = 1):
+def gd(w_0, max_iteraciones = 100, lr = 1):
     w = np.copy(w_0)
     vector_evaluaciones = []
     it = 0
@@ -52,29 +52,22 @@ def sgd(w_0, max_iteraciones = 100, lr = 1):
 
 # Método de Newton
 def metodo_newton(w_0, max_iteraciones = 100, lr = 1):
-    w = np.copy(w_0)              # Copiar los w iniciales para no modificarlos
-    i = 0                         # Iniciar las iteraciones a 0
-    lista_w = []                   # Se inicializa una lista vacía con los valors de w
-    lista_evaluaciones = []                   # Se inicializa una lista vacía con los valors de la función
-    # Mientras el número de iteraciones no supere el máximo, calcular
-    # la hessiana, invertirla, calcular el gradiente y ajustar w
-    # Añadir además a las listas correspondientes los valores de w y de w evaluado en f
-    while i < max_iteraciones:
-        i += 1
-        # Calcular la Hessiana, invertirla (pseudoinversa) y calcular el gradiente
-        inv_hessiana = np.linalg.inv(hessiana_f(w))
-        # Calcular theta (producto vectorial del Hessiana invertida y el gradiente)
-        aux = inv_hessiana.dot(gradf(w).reshape(-1, 1))
-        aux = aux.reshape(-1,)                      # Hacer que theta sea un vector fila
-        # Multiplicar theta por lr, en caso de que se haya especificado
-        aux = lr * aux
-        # Actualizar w
-        w = w - aux
-        # Añadir w y su valor a las listas correspondientes
-        lista_w.append(w)
-        lista_evaluaciones.append(f(w))
-    return w, i-1, np.array(lista_w), np.array(lista_evaluaciones)
+	w = np.copy(w_0)
+	vector_evaluaciones = []
+	i = 0
+	# Mientras no se cumpla el límite de iteraciones
+	while i < max_iteraciones:
+	    i += 1
+	    # Calculamos la inversa de la hessiana
+	    inv_hessiana = np.linalg.inv(hessiana_f(w))
+	    # Calculamos el producto vectorial de la inversa de la hessiana y el gradiente
+	    aux = inv_hessiana.dot(gradf(w).reshape(-1, 1))
+	    aux = aux.reshape(-1,)
+	    w = w - lr * aux
+	    vector_evaluaciones.append(f(w))
+	return w, i-1, np.array(vector_evaluaciones)
 
+# Obtenemos la grafica del método de Newton
 def newton_grafica(lista_evaluaciones, max_iters = 50, lr = 0.01):
 	plt.plot(range(max_iters), lista_evaluaciones, 'b-o', label=r"$\eta$ = {}".format(lr))
 	plt.title("Valor de la función")
@@ -86,7 +79,7 @@ def newton_grafica(lista_evaluaciones, max_iters = 50, lr = 0.01):
 
 print('\n-----------------------BONUS: METODO DE NEWTON --------------------\n\n')
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 50, lr = 0.01)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 50, lr = 0.01)
 print ('Punto de inicio: (1.0, -1.0)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
@@ -97,7 +90,7 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 print ('\nGrafica con learning rate igual a 0.1')
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 50, lr = 0.1)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 50, lr = 0.1)
 print ('Punto de inicio: (1.0, -1.0)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
@@ -106,36 +99,52 @@ newton_grafica(lista_evaluaciones, max_iters = 50, lr = 0.1)
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [2.1, -2.1], max_iteraciones = 1000)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [2.1, -2.1], max_iteraciones = 1000)
 print ('Punto de inicio: (2.1, -2.1)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [3.0, -3.0], max_iteraciones = 1000)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [3.0, -3.0], max_iteraciones = 1000)
 print ('\nPunto de inicio: (3.0, -3.0)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [1.5, 1.5], max_iteraciones = 1000)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [1.5, 1.5], max_iteraciones = 1000)
 print ('\nPunto de inicio: (1.5, 1.5)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
 
-w, iteracion, lista_w, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 1000)
+w, iteracion, lista_evaluaciones = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 1000)
 print ('\nPunto de inicio: (1.0, -1.0)\n')
 print ('Coordenadas obtenidas: (x,y) = (', w[0], ', ', w[1],')\n')
 print ('Valor obtenido: f(x,y) =', lista_evaluaciones[iteracion], '\n')
 
 input("\n--- Pulsar tecla para continuar ---\n")
 
-print('\n\n----------------------- Comparación con SGD --------------------\n\n')
+print('\n\n----------------------- Comparación con GD --------------------\n\n')
 
-w_newton, iteracion, lista_w, lista_evaluaciones_newton = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 100, lr = 0.01)
-w_sgd, lista_evaluaciones_sgd = sgd(w_0 = [1.0, -1.0], max_iteraciones = 100, lr = 0.01)
-plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_newton, 'r-', label="Newton's Method")
-plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_sgd, 'g-', label='Gradient Descent')
-plt.xlabel('Iterations')
-plt.ylabel('Function value')
-plt.title("Comparison between Newton's Method and GD for (1, -1)")
+w_newton, iteracion, lista_evaluaciones_newton = metodo_newton(w_0 = [1.0, -1.0], max_iteraciones = 100, lr = 0.01)
+w_gd, lista_evaluaciones_gd = gd(w_0 = [1.0, -1.0], max_iteraciones = 100, lr = 0.01)
+plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_newton, 'r-', label="Metodo de Newton")
+plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_gd, 'g-', label='Gradiente descendente')
+plt.xlabel('Iteración')
+plt.ylabel('Valor de la función')
+plt.gcf().canvas.set_window_title('Bonus - Apartado B')
+plt.title("Comparación Newton vs Gradiente Descendente en el punto (1, -1)")
 plt.legend()
 plt.show()
+
+input("\n--- Pulsar tecla para continuar ---\n")
+
+w_newton, iteracion, lista_evaluaciones_newton = metodo_newton(w_0 = [2.1, -2.1], max_iteraciones = 100)
+w_gd, lista_evaluaciones_gd = gd(w_0 = [2.1, -2.1], max_iteraciones = 100, lr = 0.01)
+plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_newton, 'r-', label="Metodo de Newton")
+plt.plot(np.linspace(0, 100, 100), lista_evaluaciones_gd, 'g-', label='Gradiente descendente')
+plt.xlabel('Iteración')
+plt.ylabel('Valor de la función')
+plt.gcf().canvas.set_window_title('Bonus - Apartado B')
+plt.title("Comparación Newton vs Gradiente Descendente en el punto (2.1, -2.1)")
+plt.legend()
+plt.show()
+
+input("\n--- Pulsar tecla para finalizar ---\n")
