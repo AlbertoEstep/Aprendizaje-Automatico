@@ -86,15 +86,33 @@ def apartado1():
 #------------------------------Apartado 2 -----------------------------------#
 
 def funcion_signo(x):
-	if x < 0:
-		return -1
-	else:
+	if x >= 0:
 		return 1
+	else:
+		return -1
 
 def asigna_etiquetas(x, y, a, b):
 	return funcion_signo(y - a*x - b)
 
-def apartado2A():
+# Introducimos ruido en las etiquetas
+def introduce_ruido(y, porcentaje = 0.1):
+    # Primero calculamos el número de etiquetas que tenemos que cambiarle el
+	# signo (ruido) y luego obtenemos una muestra de forma aleatoria de dicho
+	# tamaño y le cambiamos el signo.
+	y_positivos = np.where(y == 1)[0]
+	n_ruido_positivos = round(y_positivos.shape[0] * porcentaje)
+	i_positivos = np.random.choice(y_positivos, n_ruido_positivos,
+									replace=False)
+
+	y_negativos = np.where(y == -1)[0]
+	n_ruido_negativos = round(y_negativos.shape[0] * porcentaje)
+	i_negativos = np.random.choice(y_negativos, n_ruido_negativos,
+									replace=False)
+
+	y[i_positivos] = -1
+	y[i_negativos] = 1
+
+def apartado2():
 	N = 100
 	dim = 2
 	rango = [-50, 50]
@@ -117,8 +135,9 @@ def apartado2A():
 	# Pintar recta
 	puntos = np.array([np.min(x[:, 0]), np.max(x[:, 0])])
 	plt.plot(puntos, a * puntos + b, c='r', label='Recta de simulación')
-
-	plt.title('Nube de 100 puntos con distribucción uniforme y recta de simulación')
+	titulo = "Nube de 100 puntos con distribucción uniforme y recta de " + \
+ 				"simulación"
+	plt.title(titulo)
 	plt.gcf().canvas.set_window_title('Ejercicio 1 - Apartado 2A')
 	plt.xlabel('Eje $x_1$')
 	plt.ylabel('Eje $x_2$')
@@ -126,6 +145,30 @@ def apartado2A():
 	plt.show()
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
+
+	# Inreoducimos ruido
+	introduce_ruido(y)
+	# Pintar puntos
+	for etiqueta in etiquetas:
+	    indice = np.where(y == etiqueta)
+	    plt.scatter(x[indice, 0], x[indice, 1], c=color[etiqueta],
+			label='Etiqueta {}'.format(etiqueta))
+	# Pintar recta
+	puntos = np.array([np.min(x[:, 0]), np.max(x[:, 0])])
+	plt.plot(puntos, a * puntos + b, c='r', label='Recta de simulación')
+	titulo = "Nube de 100 puntos con distribucción uniforme con ruido \n" + \
+ 				"y recta de simulación"
+	plt.title(titulo)
+	plt.gcf().canvas.set_window_title('Ejercicio 1 - Apartado 2B')
+	plt.xlabel('Eje $x_1$')
+	plt.ylabel('Eje $x_2$')
+	plt.legend()
+	plt.show()
+
+	input("\n--- Pulsar tecla para continuar ---\n\n")
+
+
+
 
 
 ##############################################################################
@@ -136,7 +179,7 @@ def apartado2A():
 # Función principal del programa
 def ejercicio1():
 	apartado1()
-	apartado2A()
+	apartado2()
 
 ###########                                                     ##############
 ##############################################################################
