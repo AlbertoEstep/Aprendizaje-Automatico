@@ -166,36 +166,52 @@ def apartado2():
 	plt.show()
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
+	return x, y
 
 #------------------------------Apartado 3 -----------------------------------#
 
 # Funcion 1
 def f1(x, y):
-	return (x-10)**2 + (y-20)**2 - 400
+	return (x - 10)**2 + (y - 20)**2 - 400
 
 # Funcion 2
 def f2(x, y):
-	return 0.5 * (x+10)**2 + (y-20)**2 - 400
+	return 0.5 * (x + 10)**2 + (y - 20)**2 - 400
 
 # Funcion 3
 def f3(x, y):
-	return 0.5 * (x-10)**2 - (y+20)**2 - 400
+	return 0.5 * (x - 10)**2 - (y + 20)**2 - 400
 
 # Funcion 4
 def f4(x, y):
-	return y - 20*x**2 - 5*x + 3
+	return y - 20 * x**2 - 5 * x + 3
 
-
-def apartado3():
-	N = 100
-	dim = 2
-	rango = [-50, 50]
+# Función que dibujar las graficas de las funciones que le pasamos por
+# parametro.
+def dibujar_graficas(x, y, funcion, titulo):
 	color = {1: 'b', -1: 'g'}
+	etiquetas = np.unique(y)
+	for etiqueta in etiquetas:
+	    indice = np.where(y == etiqueta)
+	    plt.scatter(x[indice, 0], x[indice, 1], c=color[etiqueta],
+			label='Etiqueta {}'.format(etiqueta))
+	x_dibujo, y_dibujo = np.meshgrid(np.linspace(-50, 50, 100),
+										np.linspace(-50, 50, 100))
+	plt.contour(x_dibujo, y_dibujo, funcion(x_dibujo, y_dibujo),
+					[0], colors='r')
+	plt.title("Función de clasificación " + titulo)
+	plt.gcf().canvas.set_window_title('Ejercicio 1 - Apartado 3')
+	plt.xlabel('Eje $x_1$')
+	plt.ylabel('Eje $x_2$')
+	plt.legend()
+	plt.show()
 
-	x = simula_unif(N = N, dim = dim, rango = rango)
-	a, b = simula_recta(rango)
-	y = []
 
+def apartado3(x, y):
+	dibujar_graficas(x, y, f1, "$f(x, y) = (x - 10)^2 + (y - 20)^2 - 400$")
+	dibujar_graficas(x, y, f2, "$f(x, y) = 0,5(x + 10)^2 + (y - 20)^2 - 400$")
+	dibujar_graficas(x, y, f3, "$f(x, y) = 0,5(x - 10)^2 - (y + 20)^2 - 400$")
+	dibujar_graficas(x, y, f4, "$f(x, y) = y - 20x^2 - 5x + 3$")
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
 
@@ -208,8 +224,8 @@ def apartado3():
 # Función principal del programa
 def ejercicio1():
 	apartado1()
-	apartado2()
-	apartado3()
+	x, y = apartado2()
+	apartado3(x, y)
 
 ###########                                                     ##############
 ##############################################################################
