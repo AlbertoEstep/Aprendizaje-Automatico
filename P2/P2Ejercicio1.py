@@ -166,7 +166,7 @@ def apartado2():
 	plt.show()
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
-	return x, y
+	return a, b, x, y
 
 #------------------------------Apartado 3 -----------------------------------#
 
@@ -207,11 +207,50 @@ def dibujar_graficas(x, y, funcion, titulo):
 	plt.show()
 
 
+# Funcion que calcula la tasa de aciertos
+def calculamos_aciertos_apartado3(x, y, funcion):
+	# Calculamos las etiquetas devueltas
+	etiquetas_devueltas = funcion(x[:,0], x[:,1])
+	# Multiplicamos las etiquetas devueltas por las etiquetas reales
+	aux = etiquetas_devueltas * y
+	# Las positivas coincidiran las devueltas con las reales
+	aciertos = len(aux[aux >= 0])
+	total = len(y)
+	return aciertos*100/total
+
+# Funcion que calcula la tasa de aciertos
+def calculamos_aciertos_apartado2(x, y, a, b):
+    etiquetas_devueltas = []
+    for elemento in x:
+        etiquetas_devueltas.append(asigna_etiquetas(elemento[0],
+													elemento[1], a, b))
+    etiquetas_devueltas = np.array(etiquetas_devueltas)
+    return 100*np.mean(y == etiquetas_devueltas)
+
+
 def apartado3(x, y):
 	dibujar_graficas(x, y, f1, "$f(x, y) = (x - 10)^2 + (y - 20)^2 - 400$")
+	input("\n--- Pulsar tecla para continuar ---\n\n")
 	dibujar_graficas(x, y, f2, "$f(x, y) = 0,5(x + 10)^2 + (y - 20)^2 - 400$")
+	input("\n--- Pulsar tecla para continuar ---\n\n")
 	dibujar_graficas(x, y, f3, "$f(x, y) = 0,5(x - 10)^2 - (y + 20)^2 - 400$")
+	input("\n--- Pulsar tecla para continuar ---\n\n")
 	dibujar_graficas(x, y, f4, "$f(x, y) = y - 20x^2 - 5x + 3$")
+
+	input("\n--- Pulsar tecla para continuar ---\n\n")
+
+def evaluar_rendimiento(x, y, a, b):
+	print("\nEvaluacion del rendimiento con respecto a la tasa de aciertos:\n")
+	acierto_recta = calculamos_aciertos_apartado2(x, y, a, b)
+	print("\tAciertos recta: {}".format(acierto_recta))
+	aciertos_1 = calculamos_aciertos_apartado3(x, y, f1)
+	print("\tAciertos función 1: {}".format(aciertos_1))
+	aciertos_2 = calculamos_aciertos_apartado3(x, y, f2)
+	print("\tAciertos función 2: {}".format(aciertos_2))
+	aciertos_3 = calculamos_aciertos_apartado3(x, y, f3)
+	print("\tAciertos función 3: {}".format(aciertos_3))
+	aciertos_4 = calculamos_aciertos_apartado3(x, y, f4)
+	print("\tAciertos función 4: {}".format(aciertos_4))
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
 
@@ -224,8 +263,9 @@ def apartado3(x, y):
 # Función principal del programa
 def ejercicio1():
 	apartado1()
-	x, y = apartado2()
+	a, b, x, y = apartado2()
 	apartado3(x, y)
+	evaluar_rendimiento(x, y, a, b)
 
 ###########                                                     ##############
 ##############################################################################
