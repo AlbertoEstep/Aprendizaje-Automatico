@@ -167,7 +167,36 @@ def apartado2():
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
+#------------------------------Apartado 3 -----------------------------------#
 
+# Funcion 1
+def f1(x, y):
+	return (x-10)**2 + (y-20)**2 - 400
+
+# Funcion 2
+def f2(x, y):
+	return 0.5 * (x+10)**2 + (y-20)**2 - 400
+
+# Funcion 3
+def f3(x, y):
+	return 0.5 * (x-10)**2 - (y+20)**2 - 400
+
+# Funcion 4
+def f4(x, y):
+	return y - 20*x**2 - 5*x + 3
+
+
+def apartado3():
+	N = 100
+	dim = 2
+	rango = [-50, 50]
+	color = {1: 'b', -1: 'g'}
+
+	x = simula_unif(N = N, dim = dim, rango = rango)
+	a, b = simula_recta(rango)
+	y = []
+
+	input("\n--- Pulsar tecla para continuar ---\n\n")
 
 
 
@@ -180,6 +209,7 @@ def apartado2():
 def ejercicio1():
 	apartado1()
 	apartado2()
+	apartado3()
 
 ###########                                                     ##############
 ##############################################################################
