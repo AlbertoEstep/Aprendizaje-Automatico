@@ -6,6 +6,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 #----------------------------------------------------------------------------#
 #--------------- Ejercicio sobre la complejidad de H y el ruido -------------#
@@ -206,26 +207,31 @@ def dibujar_graficas(x, y, funcion, titulo):
 	plt.legend()
 	plt.show()
 
-
-# Funcion que calcula la tasa de aciertos
-def calculamos_aciertos_apartado3(x, y, funcion):
+# Creamos la matriz de confusión
+def conf_mat(x, y, funcion):
 	# Calculamos las etiquetas devueltas
 	etiquetas_devueltas = funcion(x[:,0], x[:,1])
-	# Multiplicamos las etiquetas devueltas por las etiquetas reales
-	aux = etiquetas_devueltas * y
-	# Las positivas coincidiran las devueltas con las reales
-	aciertos = len(aux[aux >= 0])
-	total = len(y)
-	return aciertos*100/total
+	# Normalizamos la etiquetas
+	prediccion = etiquetas_devueltas/abs(etiquetas_devueltas)
+	# Creamos la matriz de confusion con pandas
+	y_real = pd.Series(y, name='Real')
+	y_pred = pd.Series(prediccion, name='Predecido')
+	df_confusion = pd.crosstab(y_real, y_pred)
+	return df_confusion
 
-# Funcion que calcula la tasa de aciertos
-def calculamos_aciertos_apartado2(x, y, a, b):
-    etiquetas_devueltas = []
-    for elemento in x:
-        etiquetas_devueltas.append(asigna_etiquetas(elemento[0],
+# Creamos la matriz de confusión
+def conf_mat_recta(x, y, a, b):
+	# Calculamos las etiquetas devueltas
+	etiquetas_devueltas = []
+	for elemento in x:
+		etiquetas_devueltas.append(asigna_etiquetas(elemento[0],
 													elemento[1], a, b))
-    etiquetas_devueltas = np.array(etiquetas_devueltas)
-    return 100*np.mean(y == etiquetas_devueltas)
+	prediccion = np.array(etiquetas_devueltas)
+	# Creamos la matriz de confusion con pandas
+	y_real = pd.Series(y, name='Real')
+	y_pred = pd.Series(prediccion, name='Predecido')
+	df_confusion = pd.crosstab(y_real, y_pred)
+	return df_confusion
 
 
 def apartado3(x, y):
@@ -240,17 +246,23 @@ def apartado3(x, y):
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
 def evaluar_rendimiento(x, y, a, b):
-	print("\nEvaluacion del rendimiento con respecto a la tasa de aciertos:\n")
-	acierto_recta = calculamos_aciertos_apartado2(x, y, a, b)
-	print("\tAciertos recta: {}".format(acierto_recta))
-	aciertos_1 = calculamos_aciertos_apartado3(x, y, f1)
-	print("\tAciertos función 1: {}".format(aciertos_1))
-	aciertos_2 = calculamos_aciertos_apartado3(x, y, f2)
-	print("\tAciertos función 2: {}".format(aciertos_2))
-	aciertos_3 = calculamos_aciertos_apartado3(x, y, f3)
-	print("\tAciertos función 3: {}".format(aciertos_3))
-	aciertos_4 = calculamos_aciertos_apartado3(x, y, f4)
-	print("\tAciertos función 4: {}".format(aciertos_4))
+	print("\nEvaluacion del rendimiento:\n")
+
+	print("\nMatriz de confusión de la recta de clasificación\n")
+	print(conf_mat_recta(x, y, a, b))
+
+	print("\nMatriz de confusión de la función 1\n")
+	print(conf_mat(x, y, f1))
+
+	print("\nMatriz de confusión de la función 2\n")
+	print(conf_mat(x, y, f2))
+
+	print("\nMatriz de confusión de la función 3\n")
+	print(conf_mat(x, y, f3))
+
+	print("\nMatriz de confusión de la función 4\n")
+	print(conf_mat(x, y, f4))
+
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
 
