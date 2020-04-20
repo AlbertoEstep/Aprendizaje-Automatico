@@ -17,6 +17,12 @@ import pickle # Obtener estado semilla
 # Aclaramos que hemos usado la plantilla proporcionada por el profesor del
 # grupo 1 de prácticas.
 
+# Obtengo el estado de la semilla en el fichero
+def recuperar_semilla(ruta_fichero):
+    with open(ruta_fichero, 'rb') as fich:
+        estado = pickle.load(fich)
+    np.random.set_state(estado)
+
 ##############################################################################
 # EJERCICIO 1: Necesario para obtener los datos para este nuevo ejercicio
 
@@ -49,12 +55,32 @@ def funcion_signo(x):
 def asigna_etiquetas(x, y, a, b):
 	return funcion_signo(y - a*x - b)
 
+
+# Introducimos ruido en las etiquetas
+def introduce_ruido(y, porcentaje = 0.1):
+	y_ruido = np.copy(y)
+    # Primero calculamos el número de etiquetas que tenemos que cambiarle el
+	# signo (ruido) y luego obtenemos una muestra de forma aleatoria de dicho
+	# tamaño y le cambiamos el signo.
+	y_positivos = np.where(y == 1)[0]
+	n_ruido_positivos = round(y_positivos.shape[0] * porcentaje)
+	i_positivos = np.random.choice(y_positivos, n_ruido_positivos,
+									replace=False)
+
+	y_negativos = np.where(y == -1)[0]
+	n_ruido_negativos = round(y_negativos.shape[0] * porcentaje)
+	i_negativos = np.random.choice(y_negativos, n_ruido_negativos,
+									replace=False)
+
+	y_ruido[i_positivos] = -1
+	y_ruido[i_negativos] = 1
+	return y_ruido
+
+
+
 def ejercio_anterior():
     # Obtengo el estado de la semilla en el fichero
-    with open('./estado_semilla.dat', 'rb') as fich:
-        estado = pickle.load(fich)
-
-    np.random.set_state(estado)
+    recuperar_semilla('./estado_semilla.dat')
     N = 100
     dim = 2
     rango = [-50, 50]
@@ -67,8 +93,9 @@ def ejercio_anterior():
         y.append(asigna_etiquetas(punto[0], punto[1], a, b))
     y = np.array(y)
     etiquetas = np.unique(y)
+    y_ruido = introduce_ruido(y)
 
-    # Pintar puntos
+    # Pintar puntos y comprobamos que son los mismos que el ejercicio anterior
     for etiqueta in etiquetas:
         indice = np.where(y == etiqueta)
         plt.scatter(x[indice, 0], x[indice, 1], c=color[etiqueta],
@@ -84,7 +111,24 @@ def ejercio_anterior():
     plt.ylabel('Eje $x_2$')
     plt.legend()
     plt.show()
-    return x, y
+
+    # Pintar puntos y comprobamos que son los mismos que el ejercicio anterior
+    for etiqueta in etiquetas:
+        indice = np.where(y_ruido == etiqueta)
+        plt.scatter(x[indice, 0], x[indice, 1], c=color[etiqueta],
+    		label='Etiqueta {}'.format(etiqueta))
+    # Pintar recta
+    puntos = np.array([np.min(x[:, 0]), np.max(x[:, 0])])
+    plt.plot(puntos, a * puntos + b, c='r', label='Recta de simulación')
+    titulo = "Nube de 100 puntos con distribucción uniforme y recta de " + \
+    				"simulación"
+    plt.title(titulo)
+    plt.gcf().canvas.set_window_title('Ejercicio 1 - Apartado 2A')
+    plt.xlabel('Eje $x_1$')
+    plt.ylabel('Eje $x_2$')
+    plt.legend()
+    plt.show()
+    return x, y, y_ruido
 ##############################################################################
 
 ##############################################################################
@@ -96,48 +140,67 @@ def ejercio_anterior():
 # Algoritmo PLA
 def adjust_PLA(datos, label, max_iter, vini):
     w = np.copy(vini)
+    n_iteraciones = 0
     continuar = True
-    epoca = 0
     while continuar:
         continuar = False
-        epoca += 1
+        n_iteraciones += 1
         for x, y in zip(datos, label):
             y_predicha = funcion_signo(w.dot(x.reshape(-1, 1)))
             if y_predicha != y:
                 w += y * x
                 continuar = True
-        if epoca == max_iter:
+        if n_iteraciones == max_iter:
             break
 
-    return w, epoca
+    return w, n_iteraciones
 
 def perceptron():
-    x, y = ejercio_anterior()
-    # Crear el conjunto de datos añadiendo una columna con unos a los x
-    data = np.c_[np.ones((x.shape[0], 1), dtype=np.float64), x]
-    # Crear array de zeros
-    zeros = np.array([0.0, 0.0, 0.0])
-    print('Algoritmo PLA con w_0 = [0.0, 0.0, 0.0]\n')
-    # Lanzar el algoritmo PLA con w = [0, 0, 0] y guardar la información
-    w, iter = adjust_PLA(data, y, 10000, zeros)
-    print('Valor w: {} \tNum. iteraciones: {}'.format(w, iter))
-    input("\n--- Pulsar tecla para continuar ---\n")
+    x, y, y_ruido = ejercio_anterior()
+    datos = np.c_[np.ones((x.shape[0], 1), dtype=np.float64), x]
+    vector_cero = np.array([0.0, 0.0, 0.0])
+
+    # Con los datos del ejercicio 1.2.a
+    print("------------------- DATOS SIN RUIDO ---------------------------\n")
+    print("------ Algoritmo del perceptron partiendo del vector cero -----\n")
+    w, n_iteraciones = adjust_PLA(datos, y, 1000, vector_cero)
+    print('Valor w: {} - Número de iteraciones: {}'.format(w, n_iteraciones))
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
 
     # Random initializations
-    iterations = []
-    for i in range(0,10):
-        #CODIGO DEL ESTUDIANTE
-        True
+    print("-- Algoritmo del perceptron partiendo de vectores aleatorios --\n")
+    n_iteraciones = []
+    w_aleatorios = []
+    for _ in range(10):
+        w_aleatorio = simula_unif(3, 1, [0.0, 1.0]).reshape(-1,)
+        w, iteracion = adjust_PLA(datos, y, 1000, w_aleatorio)
+        n_iteraciones.append(iteracion)
+        w_aleatorios.append(w_aleatorio)
+        print('w_0 = {}'.format(w_aleatorio))
+        print('Valor w: {} - Número de iteraciones: {}'.format(w, iteracion))
 
-    print('Valor medio de iteraciones necesario para converger: {}'.format(np.mean(np.asarray(iterations))))
-    input("\n--- Pulsar tecla para continuar ---\n")
+    print('Valor medio de iteraciones necesario para converger: {}'.format(
+            np.mean(np.asarray(n_iteraciones))))
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
 
-# Ahora con los datos del ejercicio 1.2.b
+    # Con los datos del ejercicio 1.2.b
+    print("------------------- DATOS CON RUIDO ---------------------------\n")
+    print("------ Algoritmo del perceptron partiendo del vector cero -----\n")
+    w, n_iteraciones = adjust_PLA(datos, y_ruido, 10000, vector_cero)
+    print('Valor w: {} - Número de iteraciones: {}'.format(w, n_iteraciones))
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
+    # Random initializations
+    print("-- Algoritmo del perceptron partiendo de vectores aleatorios --\n")
+    n_iteraciones = []
+    for w_aleatorio in w_aleatorios:
+        w, iteracion = adjust_PLA(datos, y_ruido, 10000, w_aleatorio)
+        n_iteraciones.append(iteracion)
+        print('w_0 = {}'.format(w_aleatorio))
+        print('Valor w: {} - Número de iteraciones: {}'.format(w, iteracion))
 
-#CODIGO DEL ESTUDIANTE
-
-
-input("\n--- Pulsar tecla para continuar ---\n")
+    print('Valor medio de iteraciones necesario para converger: {}'.format(
+        np.mean(np.asarray(n_iteraciones))))
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
 
 ###############################################################################
 ###############################################################################

@@ -72,7 +72,7 @@ def apartado1():
 	plt.ylabel('Eje $x_2$')
 	plt.show()
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 
 	# Pintamos el gráfico de dispersion con los datos obtenidos
 	train_x_gaus = simula_gaus(N = N, dim = dim, sigma = sigma_gaus)
@@ -83,7 +83,7 @@ def apartado1():
 	plt.ylabel('Eje $x_2$')
 	plt.show()
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 
 #------------------------------Apartado 2 -----------------------------------#
 
@@ -149,7 +149,7 @@ def apartado2():
 	plt.legend()
 	plt.show()
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 
 	# Inreoducimos ruido
 	introduce_ruido(y)
@@ -170,7 +170,7 @@ def apartado2():
 	plt.legend()
 	plt.show()
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 	return a, b, x, y
 
 #------------------------------Apartado 3 -----------------------------------#
@@ -264,14 +264,14 @@ def conf_mat_recta(x, y, a, b):
 
 def apartado3(x, y):
 	plot_datos_cuad(x, y, f1, "$f(x, y) = (x - 10)^2 + (y - 20)^2 - 400$")
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 	plot_datos_cuad(x, y, f2, "$f(x, y) = 0,5(x + 10)^2 + (y - 20)^2 - 400$")
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 	plot_datos_cuad(x, y, f3, "$f(x, y) = 0,5(x - 10)^2 - (y + 20)^2 - 400$")
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 	plot_datos_cuad(x, y, f4, "$f(x, y) = y - 20x^2 - 5x + 3$")
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 
 def evaluar_rendimiento(x, y, a, b):
 	print("\nEvaluacion del rendimiento:\n")
@@ -291,7 +291,7 @@ def evaluar_rendimiento(x, y, a, b):
 	print("\nMatriz de confusión de la función 4\n")
 	print(conf_mat(x, y, f4))
 
-	input("\n--- Pulsar tecla para continuar ---\n\n")
+	input("\n--- Pulsar 'Enter' para continuar ---\n\n")
 
 
 ##############################################################################
