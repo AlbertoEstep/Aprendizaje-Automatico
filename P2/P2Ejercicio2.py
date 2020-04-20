@@ -206,34 +206,82 @@ def perceptron():
 ###############################################################################
 ###############################################################################
 
-# EJERCICIO 3: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
+# EJERCICIO 2.2: REGRESIÓN LOGÍSTICA CON STOCHASTIC GRADIENT DESCENT
 
-def sgdRL():
-    #CODIGO DEL ESTUDIANTE
+# Función gradiente
+def gradiente(x, y, w):
+    return -y * x/(1 + np.exp(y * w.dot(x)))
+
+# Función para ajustar un clasificador basado en regresión lineal mediante
+# el algoritmo SGD
+def sgdRL(datos, etiquetas, threshold=0.01, lr=0.01):
+    N, dimension = datos.shape
+    w = np.zeros(dimension)
+    delta = np.inf
+    while delta > threshold:
+        indices = np.random.permutation(N)
+        w_anterior = np.copy(w)
+        for indice in indices:
+            w = w - lr * gradiente(datos[indice], etiquetas[indice], w)
+        delta = np.linalg.norm(w_anterior - w)
     return w
 
 
+def regresion_logistica_sgd():
+    # Establecemos una nueva semilla
+    np.random.seed(1)
 
-#CODIGO DEL ESTUDIANTE
+    # Calculamos los coeficcientes de la recta y simulamos los datos
+    intervalo = [-2, 2]
+    a, b = simula_recta(intervalo)
+    N = 100
+    datos = simula_unif(N, 2, intervalo)
+    matriz_datos = np.hstack((np.ones((N, 1)), datos))
+    etiquetas = np.empty((N, ))
+    for i in range(N):
+        etiquetas[i] = asigna_etiquetas(datos[i, 0], datos[i, 1], a, b)
 
-input("\n--- Pulsar tecla para continuar ---\n")
+    # Calculamos los coeficientes del modelos mediante la regresión logistica
+    # con gradiente descendente que hemos implementado
+    w = sgdRL(matriz_datos, etiquetas)
+
+    # Pintamos la regresión obtenida
+    plt.xlim(np.min(datos[:, 0]), np.max(datos[:, 0]))
+    plt.ylim(np.min(datos[:, 1]), np.max(datos[:, 1]))
+    color = {1: 'b', -1: 'g'}
+    for etiqueta, nombre in [(-1, "Etiqueta -1"), (1, "Etiqueta 1")]:
+        d = datos[etiquetas == etiqueta]
+        plt.scatter(d[:, 0], d[:, 1], c=color[etiqueta], label=nombre)
+    x = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
+    for w, nombre in zip([w], ["sgdRL"]):
+        plt.plot(x, (-w[1]*x - w[0])/w[2], c='r', label=nombre)
+    plt.legend()
+    plt.show()
+
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
+
+    return intervalo, a, b, w
 
 
+# Usar la muestra de datos etiquetada para encontrar nuestra solución g
+# y estimar Eout usando para ello un número suficientemente grande de nuevas
+# muestras (>999).
 
-# Usar la muestra de datos etiquetada para encontrar nuestra solución g y estimar Eout
-# usando para ello un número suficientemente grande de nuevas muestras (>999).
+def ErrRL(w, x, y):
+  return np.mean(np.log(1 + np.exp(-y * x.dot(w))))
 
+def error_sgdRL(intervalo, a, b, w):
+    N = 1000
+    datos_test = simula_unif(N, 2, intervalo)
+    matriz_datos_test = np.hstack((np.ones((N, 1)), datos_test))
+    etiquetas_test = np.empty((N, ))
 
-#CODIGO DEL ESTUDIANTE
+    for i in range(N):
+        etiquetas_test[i] = asigna_etiquetas(datos_test[i, 0],
+                                            datos_test[i, 1], a, b)
 
-
-input("\n--- Pulsar tecla para continuar ---\n")
-
-
-
-
-
-
+    print("Error: {}".format(ErrRL(w, matriz_datos_test, etiquetas_test)))
+    input("\n--- Pulsar 'Enter' para continuar ---\n")
 
 
 ##############################################################################
@@ -243,7 +291,9 @@ input("\n--- Pulsar tecla para continuar ---\n")
 
 # Función principal del programa
 def ejercicio2():
-	perceptron()
+    #perceptron()
+    intervalo, a, b, w = regresion_logistica_sgd()
+    error_sgdRL(intervalo, a, b, w)
 
 ###########                                                     ##############
 ##############################################################################
