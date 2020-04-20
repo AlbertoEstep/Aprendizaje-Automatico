@@ -7,6 +7,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import pickle # Guardar estado semilla
 
 #----------------------------------------------------------------------------#
 #--------------- Ejercicio sobre la complejidad de H y el ruido -------------#
@@ -114,6 +115,9 @@ def introduce_ruido(y, porcentaje = 0.1):
 	y[i_negativos] = 1
 
 def apartado2():
+	# Guardo el estado de la semilla en el fichero, que usare en el ejercicio 2
+	with open('./estado_semilla.dat', 'wb') as fich:
+		pickle.dump(np.random.get_state(), fich)
 	N = 100
 	dim = 2
 	rango = [-50, 50]
@@ -172,45 +176,69 @@ def apartado2():
 #------------------------------Apartado 3 -----------------------------------#
 
 # Funcion 1
-def f1(x, y):
-	return (x - 10)**2 + (y - 20)**2 - 400
+def f1(x):
+	return (x[:,0] - 10)**2 + (x[:,1] - 20)**2 - 400
 
 # Funcion 2
-def f2(x, y):
-	return 0.5 * (x + 10)**2 + (y - 20)**2 - 400
+def f2(x):
+	return 0.5 * (x[:,0] + 10)**2 + (x[:,1] - 20)**2 - 400
 
 # Funcion 3
-def f3(x, y):
-	return 0.5 * (x - 10)**2 - (y + 20)**2 - 400
+def f3(x):
+	return 0.5 * (x[:,0] - 10)**2 - (x[:,1] + 20)**2 - 400
 
 # Funcion 4
-def f4(x, y):
-	return y - 20 * x**2 - 5 * x + 3
+def f4(x):
+	return x[:,1] - 20 * x[:,0]**2 - 5 * x[:,0] + 3
 
-# Función que dibujar las graficas de las funciones que le pasamos por
-# parametro.
-def dibujar_graficas(x, y, funcion, titulo):
-	color = {1: 'b', -1: 'g'}
-	etiquetas = np.unique(y)
-	for etiqueta in etiquetas:
-	    indice = np.where(y == etiqueta)
-	    plt.scatter(x[indice, 0], x[indice, 1], c=color[etiqueta],
-			label='Etiqueta {}'.format(etiqueta))
-	x_dibujo, y_dibujo = np.meshgrid(np.linspace(-50, 50, 100),
-										np.linspace(-50, 50, 100))
-	plt.contour(x_dibujo, y_dibujo, funcion(x_dibujo, y_dibujo),
-					[0], colors='r')
-	plt.title("Función de clasificación " + titulo)
+# Función proporcionada por el profesor del grupo 1 de práticas
+# Funcion que dibuja las gráficas de las funciones pedidas y los puntos
+# de nuestra muestra.
+def plot_datos_cuad(X, y, fz, title='Point cloud plot', xaxis='x axis',
+						yaxis='y axis'):
+	#Preparar datos
+	min_xy = X.min(axis=0)
+	max_xy = X.max(axis=0)
+	border_xy = (max_xy-min_xy)*0.01
+
+	#Generar grid de predicciones
+	xx, yy = np.mgrid[min_xy[0]-border_xy[0]:max_xy[0]+border_xy[0]+
+						0.001:border_xy[0],
+	                  min_xy[1]-border_xy[1]:max_xy[1]+border_xy[1]+
+					  	0.001:border_xy[1]]
+	grid = np.c_[xx.ravel(), yy.ravel(), np.ones_like(xx).ravel()]
+	pred_y = fz(grid)
+	# pred_y[(pred_y>-1) & (pred_y<1)]
+	pred_y = np.clip(pred_y, -1, 1).reshape(xx.shape)
+
+	#Plot
+	f, ax = plt.subplots(figsize=(8, 6))
+	contour = ax.contourf(xx, yy, pred_y, 50, cmap='RdBu',vmin=-1, vmax=1)
+	ax_c = f.colorbar(contour)
+	ax_c.set_label('$f(x, y)$')
+	ax_c.set_ticks([-1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1])
+	ax.scatter(X[:, 0], X[:, 1], c=y, s=50, linewidth=2,
+	            cmap="RdYlBu", edgecolor='white')
+
+	XX, YY = np.meshgrid(np.linspace(round(min(min_xy)), round(max(max_xy)),
+							X.shape[0]),np.linspace(round(min(min_xy)),
+							round(max(max_xy)),X.shape[0]))
+	positions = np.vstack([XX.ravel(), YY.ravel()])
+	ax.contour(XX,YY,fz(positions.T).reshape(X.shape[0],X.shape[0]),[0],
+												colors='black')
+
+	ax.set(
+	   xlim=(min_xy[0]-border_xy[0], max_xy[0]+border_xy[0]),
+	   ylim=(min_xy[1]-border_xy[1], max_xy[1]+border_xy[1]),
+	   xlabel=xaxis, ylabel=yaxis)
 	plt.gcf().canvas.set_window_title('Ejercicio 1 - Apartado 3')
-	plt.xlabel('Eje $x_1$')
-	plt.ylabel('Eje $x_2$')
-	plt.legend()
+	plt.title(title)
 	plt.show()
 
 # Creamos la matriz de confusión
 def conf_mat(x, y, funcion):
 	# Calculamos las etiquetas devueltas
-	etiquetas_devueltas = funcion(x[:,0], x[:,1])
+	etiquetas_devueltas = funcion(x)
 	# Normalizamos la etiquetas
 	prediccion = etiquetas_devueltas/abs(etiquetas_devueltas)
 	# Creamos la matriz de confusion con pandas
@@ -235,13 +263,13 @@ def conf_mat_recta(x, y, a, b):
 
 
 def apartado3(x, y):
-	dibujar_graficas(x, y, f1, "$f(x, y) = (x - 10)^2 + (y - 20)^2 - 400$")
+	plot_datos_cuad(x, y, f1, "$f(x, y) = (x - 10)^2 + (y - 20)^2 - 400$")
 	input("\n--- Pulsar tecla para continuar ---\n\n")
-	dibujar_graficas(x, y, f2, "$f(x, y) = 0,5(x + 10)^2 + (y - 20)^2 - 400$")
+	plot_datos_cuad(x, y, f2, "$f(x, y) = 0,5(x + 10)^2 + (y - 20)^2 - 400$")
 	input("\n--- Pulsar tecla para continuar ---\n\n")
-	dibujar_graficas(x, y, f3, "$f(x, y) = 0,5(x - 10)^2 - (y + 20)^2 - 400$")
+	plot_datos_cuad(x, y, f3, "$f(x, y) = 0,5(x - 10)^2 - (y + 20)^2 - 400$")
 	input("\n--- Pulsar tecla para continuar ---\n\n")
-	dibujar_graficas(x, y, f4, "$f(x, y) = y - 20x^2 - 5x + 3$")
+	plot_datos_cuad(x, y, f4, "$f(x, y) = y - 20x^2 - 5x + 3$")
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
 
@@ -264,7 +292,6 @@ def evaluar_rendimiento(x, y, a, b):
 	print(conf_mat(x, y, f4))
 
 	input("\n--- Pulsar tecla para continuar ---\n\n")
-
 
 
 ##############################################################################
