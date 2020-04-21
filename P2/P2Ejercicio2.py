@@ -6,7 +6,6 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import pickle # Obtener estado semilla
 
 
@@ -186,14 +185,14 @@ def perceptron():
     # Con los datos del ejercicio 1.2.b
     print("------------------- DATOS CON RUIDO ---------------------------\n")
     print("------ Algoritmo del perceptron partiendo del vector cero -----\n")
-    w, n_iteraciones = adjust_PLA(datos, y_ruido, 10000, vector_cero)
+    w, n_iteraciones = adjust_PLA(datos, y_ruido, 1000, vector_cero)
     print('Valor w: {} - Número de iteraciones: {}'.format(w, n_iteraciones))
     input("\n--- Pulsar 'Enter' para continuar ---\n")
     # Random initializations
     print("-- Algoritmo del perceptron partiendo de vectores aleatorios --\n")
     n_iteraciones = []
     for w_aleatorio in w_aleatorios:
-        w, iteracion = adjust_PLA(datos, y_ruido, 10000, w_aleatorio)
+        w, iteracion = adjust_PLA(datos, y_ruido, 1000, w_aleatorio)
         n_iteraciones.append(iteracion)
         print('w_0 = {}'.format(w_aleatorio))
         print('Valor w: {} - Número de iteraciones: {}'.format(w, iteracion))
@@ -255,6 +254,12 @@ def regresion_logistica_sgd():
     x = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
     for w, nombre in zip([w], ["sgdRL"]):
         plt.plot(x, (-w[1]*x - w[0])/w[2], c='r', label=nombre)
+    # Pintar recta
+    puntos = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
+    plt.plot(puntos, a * puntos + b, c='b', label='Recta de simulación')
+    plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2B')
+    plt.xlabel('Eje $x_1$')
+    plt.ylabel('Eje $x_2$')
     plt.legend()
     plt.show()
 
@@ -267,10 +272,10 @@ def regresion_logistica_sgd():
 # y estimar Eout usando para ello un número suficientemente grande de nuevas
 # muestras (>999).
 
-def ErrRL(w, x, y):
+def error_sgdRL(w, x, y):
   return np.mean(np.log(1 + np.exp(-y * x.dot(w))))
 
-def error_sgdRL(intervalo, a, b, w):
+def estudio_error(intervalo, a, b, w):
     N = 1000
     datos_test = simula_unif(N, 2, intervalo)
     matriz_datos_test = np.hstack((np.ones((N, 1)), datos_test))
@@ -280,7 +285,8 @@ def error_sgdRL(intervalo, a, b, w):
         etiquetas_test[i] = asigna_etiquetas(datos_test[i, 0],
                                             datos_test[i, 1], a, b)
 
-    print("Error: {}".format(ErrRL(w, matriz_datos_test, etiquetas_test)))
+    print("Error: {}".format(error_sgdRL(w, matriz_datos_test,
+                                            etiquetas_test)))
     input("\n--- Pulsar 'Enter' para continuar ---\n")
 
 
@@ -291,100 +297,12 @@ def error_sgdRL(intervalo, a, b, w):
 
 # Función principal del programa
 def ejercicio2():
-    #perceptron()
+    perceptron()
     intervalo, a, b, w = regresion_logistica_sgd()
-    error_sgdRL(intervalo, a, b, w)
+    estudio_error(intervalo, a, b, w)
 
 ###########                                                     ##############
 ##############################################################################
 
 if __name__ == "__main__":
     ejercicio2()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###############################################################################
-###############################################################################
-###############################################################################
-#BONUS: Clasificación de Dígitos
-
-
-# Funcion para leer los datos
-def readData(file_x, file_y, digits, labels):
-	# Leemos los ficheros
-	datax = np.load(file_x)
-	datay = np.load(file_y)
-	y = []
-	x = []
-	# Solo guardamos los datos cuya clase sea la digits[0] o la digits[1]
-	for i in range(0,datay.size):
-		if datay[i] == digits[0] or datay[i] == digits[1]:
-			if datay[i] == digits[0]:
-				y.append(labels[0])
-			else:
-				y.append(labels[1])
-			x.append(np.array([1, datax[i][0], datax[i][1]]))
-
-	x = np.array(x, np.float64)
-	y = np.array(y, np.float64)
-
-	return x, y
-
-# Lectura de los datos de entrenamiento
-x, y = readData('datos/X_train.npy', 'datos/y_train.npy', [4,8], [-1,1])
-# Lectura de los datos para el test
-x_test, y_test = readData('datos/X_test.npy', 'datos/y_test.npy', [4,8], [-1,1])
-
-
-#mostramos los datos
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x[np.where(y == -1),1]), np.squeeze(x[np.where(y == -1),2]), 'o', color='red', label='4')
-ax.plot(np.squeeze(x[np.where(y == 1),1]), np.squeeze(x[np.where(y == 1),2]), 'o', color='blue', label='8')
-ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TRAINING)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
-
-fig, ax = plt.subplots()
-ax.plot(np.squeeze(x_test[np.where(y_test == -1),1]), np.squeeze(x_test[np.where(y_test == -1),2]), 'o', color='red', label='4')
-ax.plot(np.squeeze(x_test[np.where(y_test == 1),1]), np.squeeze(x_test[np.where(y_test == 1),2]), 'o', color='blue', label='8')
-ax.set(xlabel='Intensidad promedio', ylabel='Simetria', title='Digitos Manuscritos (TEST)')
-ax.set_xlim((0, 1))
-plt.legend()
-plt.show()
-
-input("\n--- Pulsar tecla para continuar ---\n")
-
-#LINEAR REGRESSION FOR CLASSIFICATION
-
-#CODIGO DEL ESTUDIANTE
-
-
-input("\n--- Pulsar tecla para continuar ---\n")
-
-
-
-#POCKET ALGORITHM
-
-#CODIGO DEL ESTUDIANTE
-
-
-
-
-input("\n--- Pulsar tecla para continuar ---\n")
-
-
-#COTA SOBRE EL ERROR
-
-#CODIGO DEL ESTUDIANTE
