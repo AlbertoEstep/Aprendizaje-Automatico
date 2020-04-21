@@ -231,7 +231,7 @@ def regresion_logistica_sgd():
     np.random.seed(1)
 
     # Calculamos los coeficcientes de la recta y simulamos los datos
-    intervalo = [-2, 2]
+    intervalo = [0, 2]
     a, b = simula_recta(intervalo)
     N = 100
     datos = simula_unif(N, 2, intervalo)

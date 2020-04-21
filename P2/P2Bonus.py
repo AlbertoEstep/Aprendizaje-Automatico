@@ -6,11 +6,16 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
 
 ##############################################################################
 ##############################################################################
 ##############################################################################
 #BONUS: Clasificación de Dígitos
+
+# Fijamos la semilla
+np.random.seed(3)
 
 def funcion_signo(x):
 	if x >= 0:
@@ -79,14 +84,6 @@ def muestra_datos():
 
 #LINEAR REGRESSION FOR CLASSIFICATION Práctica 1
 
-# Calculamos el error mediante la expresión matricial disponible en la
-# diapositiva 8 del tema 2: E(w) = (1/N)||Xw-y||^2
-def Err(x, y, w):
-	# Calculamos el error cuadrático para cada vector de características
-	err = np.square(x.dot(w) - y.reshape(-1, 1))
-	# Calculamos la media de los errores cuadráticos y la devolvemos
-	return err.mean()
-
 def pseudoinverse(x, y):
 	# Aplicamos el algoritmo paso a paso
     x_traspuesta = x.transpose()
@@ -95,6 +92,15 @@ def pseudoinverse(x, y):
     w = w.dot(x_traspuesta)
     w = w.dot(y_traspuesta)
     return w
+
+def Err(datos, labels, w):
+    #print(w)
+    recta = lambda x: w[0]*x[:,0] + w[1]*x[:, 1] + w[2]*x[:, 2]
+    signos = labels*recta(datos)
+    aciertos = 100*len(signos[signos >= 0])/len(labels)
+    #print(aciertos)
+    return 100 - aciertos
+
 
 def PLAPocket(datos, labels, max_iter, vini):
     w = vini.copy()
@@ -106,28 +112,38 @@ def PLAPocket(datos, labels, max_iter, vini):
         for dato, etiqueta in zip(datos, labels):
             if funcion_signo(w.dot(dato)) != etiqueta:
                 w += etiqueta * dato
-        erros_actual = Err(datos, labels, w)
-        if erros_actual < error_minimo:
+        error_actual = Err(datos, labels, w)
+        print(error_actual, error_minimo)
+        if error_actual < error_minimo:
             mejor_w = w.copy()
-            error_minimo = erros_actual
+            error_minimo = error_actual
 
         if np.all(w == w_antiguo):
             return mejor_w
 
     return mejor_w
 
-#CODIGO DEL ESTUDIANTE
+def normalize(v):
+    norm=np.linalg.norm(v, ord=1)
+    if norm==0:
+        norm=np.finfo(v.dtype).eps
+    return v/norm
 
 def ejecucion(x, y, x_test, y_test):
     print("Cálculamos la regresión lineal mediante la pseudoinversa.",
             end=" ", flush=True)
-    w_rl = pseudoinverse(x, y).reshape(-1,)
+    w_rl = pseudoinverse(x, y)
     print("Completado.\n")
 
     print("Cálculamos los coeficientes de la regresion lineal mediante " +
             "el algoritmo de PLAPocket.", end=" ", flush=True)
-    w_pla = PLAPocket(x, y, 1000, w_rl)
+    w = np.random.rand(3)
+    w_pla = PLAPocket(x, y, 1000, w_rl.reshape(-1,))
     print("Completado.\n")
+    print(w_rl, w_pla)
+    w_rl = normalize(w_rl)
+    w_pla = normalize(w_pla)
+    print(w_rl, w_pla)
 
     # Pintamos la regresión obtenida
     datos = x[:, 1:]
@@ -137,9 +153,9 @@ def ejecucion(x, y, x_test, y_test):
     for etiqueta, nombre in [(-1, "Etiqueta -1"), (1, "Etiqueta 1")]:
         d = datos[y == etiqueta]
         plt.scatter(d[:, 0], d[:, 1], c=color[etiqueta], label=nombre)
-    x = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
-    plt.plot(x, (-w_rl[1] * x - w_rl[0]) / w_rl[2], label='Regresión lineal')
-    plt.plot(x, (-w_pla[1] * x - w_pla[0]) / w_pla[2], label='PLAPocket')
+    x_recta = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
+    plt.plot(x_recta, (-w_rl[1] * x_recta - w_rl[0]) / w_rl[2], label='Regresión lineal')
+    plt.plot(x_recta, (-w_pla[1] * x_recta - w_pla[0]) / w_pla[2], label='PLAPocket')
     plt.legend()
     plt.title('Digitos Manuscritos (TRAINING) y comparación de rectas')
     plt.show()
@@ -151,14 +167,19 @@ def ejecucion(x, y, x_test, y_test):
     for etiqueta, nombre in [(-1, "Etiqueta -1"), (1, "Etiqueta 1")]:
         d = datos[y_test == etiqueta]
         plt.scatter(d[:, 0], d[:, 1], c=color[etiqueta], label=nombre)
-    x = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
-    plt.plot(x, (-w_rl[1] * x - w_rl[0]) / w_rl[2], label='Regresión lineal')
-    plt.plot(x, (-w_pla[1] * x - w_pla[0]) / w_pla[2], label='PLAPocket')
+    x_recta = np.array([np.min(datos[:, 0]), np.max(datos[:, 0])])
+    plt.plot(x_recta, (-w_rl[1] * x_recta - w_rl[0]) / w_rl[2], label='Regresión lineal')
+    plt.plot(x_recta, (-w_pla[1] * x_recta - w_pla[0]) / w_pla[2], label='PLAPocket')
     plt.legend()
     plt.title('Digitos Manuscritos (TEST) y comparación de rectas')
     plt.show()
 
     input("\n--- Pulsar 'Enter' para continuar ---\n")
+    print(w_rl, w_pla)
+    print("E_in {}: \t{}".format('Regresión lineal', Err(x, y, w_rl)))
+    print("E_test {}: \t{}".format('Regresión lineal', Err(x_test, y_test, w_rl)))
+    print("E_in {}: \t{}".format('PLAPocket', Err(x, y, w_pla)))
+    print("E_test {}: \t{}".format('PLAPocket', Err(x_test, y_test, w_pla)))
 
 
 #COTA SOBRE EL ERROR
