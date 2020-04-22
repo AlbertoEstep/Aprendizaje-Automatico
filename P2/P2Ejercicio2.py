@@ -154,6 +154,12 @@ def adjust_PLA(datos, label, max_iter, vini):
 
     return w, n_iteraciones
 
+def normalize(v):
+    norm=np.linalg.norm(v, ord=1)
+    if norm==0:
+        norm=np.finfo(v.dtype).eps
+    return v/norm
+
 def perceptron():
     x, y, y_ruido = ejercio_anterior()
     datos = np.c_[np.ones((x.shape[0], 1), dtype=np.float64), x]
@@ -164,9 +170,9 @@ def perceptron():
     print("------ Algoritmo del perceptron partiendo del vector cero -----\n")
     w, n_iteraciones = adjust_PLA(datos, y, 1000, vector_cero)
     print('Valor w: {} - Número de iteraciones: {}'.format(w, n_iteraciones))
+    w = normalize(w)
+    print('Valor w normalizado: {}'.format(w))
     input("\n--- Pulsar 'Enter' para continuar ---\n")
-
-    # Random initializations
     print("-- Algoritmo del perceptron partiendo de vectores aleatorios --\n")
     n_iteraciones = []
     w_aleatorios = []
@@ -177,6 +183,8 @@ def perceptron():
         w_aleatorios.append(w_aleatorio)
         print('w_0 = {}'.format(w_aleatorio))
         print('Valor w: {} - Número de iteraciones: {}'.format(w, iteracion))
+        w = normalize(w)
+        print('Valor w normalizado: {}'.format(w))
 
     print('Valor medio de iteraciones necesario para converger: {}'.format(
             np.mean(np.asarray(n_iteraciones))))
@@ -187,8 +195,9 @@ def perceptron():
     print("------ Algoritmo del perceptron partiendo del vector cero -----\n")
     w, n_iteraciones = adjust_PLA(datos, y_ruido, 1000, vector_cero)
     print('Valor w: {} - Número de iteraciones: {}'.format(w, n_iteraciones))
+    w = normalize(w)
+    print('Valor w normalizado: {}'.format(w))
     input("\n--- Pulsar 'Enter' para continuar ---\n")
-    # Random initializations
     print("-- Algoritmo del perceptron partiendo de vectores aleatorios --\n")
     n_iteraciones = []
     for w_aleatorio in w_aleatorios:
@@ -196,6 +205,8 @@ def perceptron():
         n_iteraciones.append(iteracion)
         print('w_0 = {}'.format(w_aleatorio))
         print('Valor w: {} - Número de iteraciones: {}'.format(w, iteracion))
+        w = normalize(w)
+        print('Valor w normalizado: {}'.format(w))
 
     print('Valor medio de iteraciones necesario para converger: {}'.format(
         np.mean(np.asarray(n_iteraciones))))
@@ -213,11 +224,11 @@ def gradiente(x, y, w):
 
 # Función para ajustar un clasificador basado en regresión lineal mediante
 # el algoritmo SGD
-def sgdRL(datos, etiquetas, threshold=0.01, lr=0.01):
+def sgdRL(datos, etiquetas, umbral=0.01, lr=0.01):
     N, dimension = datos.shape
     w = np.zeros(dimension)
     delta = np.inf
-    while delta > threshold:
+    while delta > umbral:
         indices = np.random.permutation(N)
         w_anterior = np.copy(w)
         for indice in indices:
@@ -260,6 +271,7 @@ def regresion_logistica_sgd():
     plt.gcf().canvas.set_window_title('Ejercicio 2 - Apartado 2B')
     plt.xlabel('Eje $x_1$')
     plt.ylabel('Eje $x_2$')
+    plt.title('Regresión logística aplicada a los datos obtenidos')
     plt.legend()
     plt.show()
 
@@ -275,6 +287,12 @@ def regresion_logistica_sgd():
 def error_sgdRL(w, x, y):
   return np.mean(np.log(1 + np.exp(-y * x.dot(w))))
 
+def error_mal_clasificados(w, datos, labels):
+    recta = lambda x: w[0]*x[:,0] + w[1]*x[:, 1] + w[2]*x[:, 2]
+    signos = labels*recta(datos)
+    aciertos = len(signos[signos >= 0])/len(labels)
+    return 1 - aciertos
+
 def estudio_error(intervalo, a, b, w):
     N = 1000
     datos_test = simula_unif(N, 2, intervalo)
@@ -285,7 +303,9 @@ def estudio_error(intervalo, a, b, w):
         etiquetas_test[i] = asigna_etiquetas(datos_test[i, 0],
                                             datos_test[i, 1], a, b)
 
-    print("Error: {}".format(error_sgdRL(w, matriz_datos_test,
+    print("Error (de la regresión): {}".format(error_sgdRL(w, matriz_datos_test,
+                                            etiquetas_test)))
+    print("Error (mal clasificados): {}".format(error_mal_clasificados(w, matriz_datos_test,
                                             etiquetas_test)))
     input("\n--- Pulsar 'Enter' para continuar ---\n")
 
