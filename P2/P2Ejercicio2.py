@@ -45,12 +45,14 @@ def simula_recta(intervalo):
 
     return a, b
 
+# Funcion signo, si es positivo o cero se le asigna 1 y si es negativo -1
 def funcion_signo(x):
 	if x >= 0:
 		return 1
 	else:
 		return -1
 
+# Función para asignar etiquetas en función de la función signo de una recta
 def asigna_etiquetas(x, y, a, b):
 	return funcion_signo(y - a*x - b)
 
@@ -84,7 +86,7 @@ def ejercio_anterior():
     dim = 2
     rango = [-50, 50]
     color = {1: 'b', -1: 'g'}
-
+    # Generamos los datos y las etiquetas con ruido
     x = simula_unif(N = N, dim = dim, rango = rango)
     a, b = simula_recta(rango)
     y = []
@@ -136,7 +138,7 @@ def ejercio_anterior():
 
 # EJERCICIO 2.1: ALGORITMO PERCEPTRON
 
-# Algoritmo PLA
+# Algoritmo PLA de las trasparencias
 def adjust_PLA(datos, label, max_iter, vini):
     w = np.copy(vini)
     n_iteraciones = 0
@@ -144,23 +146,31 @@ def adjust_PLA(datos, label, max_iter, vini):
     while continuar:
         continuar = False
         n_iteraciones += 1
+        # Para cada dato con su etiqueta
         for x, y in zip(datos, label):
+            # Se calcula la prevision de la etiqueta para dicho dato
             y_predicha = funcion_signo(w.dot(x.reshape(-1, 1)))
+            # Si no es correcta
             if y_predicha != y:
+                # Se actualizan los coeficientes del modelo y seguimos
                 w += y * x
                 continuar = True
+        # Paramos si alcanzamos el límite de iteraciones
         if n_iteraciones == max_iter:
             break
 
     return w, n_iteraciones
 
+# Para normalizar un vector
 def normalize(v):
     norm=np.linalg.norm(v, ord=1)
     if norm==0:
         norm=np.finfo(v.dtype).eps
     return v/norm
 
+# ejecucion del apartado del percerptron
 def perceptron():
+    # Obtenemos los datos
     x, y, y_ruido = ejercio_anterior()
     datos = np.c_[np.ones((x.shape[0], 1), dtype=np.float64), x]
     vector_cero = np.array([0.0, 0.0, 0.0])
@@ -228,15 +238,19 @@ def sgdRL(datos, etiquetas, umbral=0.01, lr=0.01):
     N, dimension = datos.shape
     w = np.zeros(dimension)
     delta = np.inf
+    # Mientras la diferencia no sea menor al umbral
     while delta > umbral:
+        # Permutamos los datos
         indices = np.random.permutation(N)
         w_anterior = np.copy(w)
+        # Para cada dato
         for indice in indices:
+            # Actualizamos los coeficientes del modelo
             w = w - lr * gradiente(datos[indice], etiquetas[indice], w)
         delta = np.linalg.norm(w_anterior - w)
     return w
 
-
+# Ejecuion del apartado de regresión logistica
 def regresion_logistica_sgd():
     # Establecemos una nueva semilla
     np.random.seed(1)
@@ -284,15 +298,18 @@ def regresion_logistica_sgd():
 # y estimar Eout usando para ello un número suficientemente grande de nuevas
 # muestras (>999).
 
+# Función de error de regresión
 def error_sgdRL(w, x, y):
   return np.mean(np.log(1 + np.exp(-y * x.dot(w))))
 
+# Funcion de error de tasa de mal clasificados
 def error_mal_clasificados(w, datos, labels):
     recta = lambda x: w[0]*x[:,0] + w[1]*x[:, 1] + w[2]*x[:, 2]
     signos = labels*recta(datos)
     aciertos = len(signos[signos >= 0])/len(labels)
     return 1 - aciertos
 
+# Ejecucion del apartado del estudio del error
 def estudio_error(intervalo, a, b, w):
     N = 1000
     datos_test = simula_unif(N, 2, intervalo)

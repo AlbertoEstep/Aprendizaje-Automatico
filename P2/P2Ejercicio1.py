@@ -87,12 +87,14 @@ def apartado1():
 
 #------------------------------Apartado 2 -----------------------------------#
 
+# Funcion signo, si es positivo o cerose le asigna 1 y si es negativo -1
 def funcion_signo(x):
 	if x >= 0:
 		return 1
 	else:
 		return -1
 
+# Función para asignar etiquetas en función de la función signo de una recta
 def asigna_etiquetas(x, y, a, b):
 	return funcion_signo(y - a*x - b)
 
@@ -114,6 +116,7 @@ def introduce_ruido(y, porcentaje = 0.1):
 	y[i_positivos] = -1
 	y[i_negativos] = 1
 
+
 def apartado2():
 	# Guardo el estado de la semilla en el fichero, que usare en el ejercicio 2
 	with open('./estado_semilla.dat', 'wb') as fich:
@@ -122,11 +125,11 @@ def apartado2():
 	dim = 2
 	rango = [-50, 50]
 	color = {1: 'b', -1: 'g'}
-
+	# Genero datos
 	x = simula_unif(N = N, dim = dim, rango = rango)
 	a, b = simula_recta(rango)
 	y = []
-
+	# Genero etiquetas
 	for punto in x:
 	    y.append(asigna_etiquetas(punto[0], punto[1], a, b))
 	y = np.array(y)

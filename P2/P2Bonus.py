@@ -17,6 +17,7 @@ import pandas as pd
 # Fijamos la semilla
 np.random.seed(3)
 
+# Funcion signo, si es positivo o cero se le asigna 1 y si es negativo -1
 def funcion_signo(x):
 	if x >= 0:
 		return 1
@@ -83,7 +84,6 @@ def muestra_datos():
     return x, y, x_test, y_test
 
 #LINEAR REGRESSION FOR CLASSIFICATION Práctica 1
-
 def pseudoinverse(x, y):
 	# Aplicamos el algoritmo paso a paso
     x_traspuesta = x.transpose()
@@ -93,33 +93,40 @@ def pseudoinverse(x, y):
     w = w.dot(y_traspuesta)
     return w
 
+# Función de error, mal clasificados
 def Err(datos, labels, w):
     recta = lambda x: w[0]*x[:,0] + w[1]*x[:, 1] + w[2]*x[:, 2]
     signos = labels*recta(datos)
     aciertos = 100*len(signos[signos >= 0])/len(labels)
     return 100 - aciertos
 
-
+# Algoritmo de PLAPocket
 def PLAPocket(datos, labels, max_iter, vini):
     w = vini.copy()
     mejor_w = w.copy()
     error_minimo = Err(datos, labels, mejor_w)
-
     for iteracion in range(1, max_iter + 1):
         w_antiguo = w.copy()
+		# para cada dato
         for dato, etiqueta in zip(datos, labels):
+			# Si no es el predicho
             if funcion_signo(w.dot(dato)) != etiqueta:
+				# actualizamos los coeficientes del modelo
                 w += etiqueta * dato
+		# calculamos el error
         error_actual = Err(datos, labels, w)
+		# Si mejoramos el error anterior
         if error_actual < error_minimo:
+			# Guardamos los mejores coeficientes obtenidos
             mejor_w = w.copy()
             error_minimo = error_actual
-
+		# Si converge lo devolvemos
         if np.all(w == w_antiguo):
             return mejor_w
 
     return mejor_w
 
+# Normalizamos un vector con norma 1
 def normalize(v):
     norm=np.linalg.norm(v, ord=1)
     if norm==0:
@@ -127,6 +134,7 @@ def normalize(v):
     return v/norm
 
 #COTA SOBRE EL ERROR
+# Función extraida de las transparencias
 def cota(err, N, delta):
 	return err + np.sqrt(1/(2 * N) * (np.log(2 / delta) + 3 * 64 * np.log(2)))
 
