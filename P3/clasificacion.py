@@ -59,12 +59,6 @@ def matriz_correlaciones_procesados(datos):
     f.suptitle('Matriz Correlaciones')
     plt.show()
 
-# Estima la cota E_out
-def cota_Eout(E_test, delta):
-    N = X_test.shape[0]
-    cota = E_test + math.sqrt((1/(2*N))*math.log(2/delta))
-    return cota
-
 print("Leyendo los datos.", end=" ", flush=True)
 # Lectura de los datos de entrenamiento
 X_train, y_train = leerDatos('datos/optdigits.tra')
@@ -214,7 +208,6 @@ print("E_in: {}".format(E_in))
 print('E_val: {}'.format(E_val))
 E_test = 1 - clasificador.score(X_test, y_test)
 print("E_test: {}".format(E_test))
-print("E_out: {}".format(cota_Eout(E_test, delta = 0.05)))
 
 input("\n----------- Pulse 'Enter' para continuar --------------\n\n\n")
 
@@ -252,6 +245,5 @@ print("E_in SVM: {}".format(E_in))
 print('E_val SVM: {}'.format(E_val))
 E_test_svr = 1 - clasificador.score(X_test, y_test)
 print("E_test SVM: {}".format(E_test_svr))
-print("E_out estimado con E_test de SMV: {}".format(cota_Eout(E_test_svr, delta = 0.05)))
 
 input("\nFin. Pulse 'Enter' para terminar\n\n\n")

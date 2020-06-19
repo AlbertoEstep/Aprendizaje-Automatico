@@ -69,12 +69,6 @@ def matriz_correlaciones(datos):
     f.suptitle('Matriz Correlaciones')
     plt.show()
 
-# Calcula la cota de Eout
-def cota_Eout(E_test, delta):
-    N = X_test.shape[0]
-    cota = E_test + math.sqrt((1/(2*N))*math.log(2/delta))
-    return cota
-
 # Respuesta de Si o No
 def quiere_visualizar():
     while True:
@@ -349,7 +343,6 @@ print("E_in: {}".format(E_in))
 print('E_val: {}'.format(E_val))
 E_test = 1 - clasificador.score(X_test, y_test)
 print("E_test: {}".format(E_test))
-print("E_out: {}".format(cota_Eout(E_test, delta = 0.05)))
 
 input("\n----------- Pulse 'Enter' para continuar --------------\n\n\n")
 
@@ -382,6 +375,5 @@ print("E_in SVM: {}".format(E_in_svr))
 print('E_val SMV: {}'.format(E_val_svr))
 E_test_svr = 1 - clasificador_svr.score(X_test, y_test)
 print("E_test SMV: {}".format(E_test_svr))
-print("E_out estimado con E_test de SMV: {}".format(cota_Eout(E_test_svr, delta = 0.05)))
 
 input("\nFin. Pulse 'Enter' para terminar\n\n\n")
